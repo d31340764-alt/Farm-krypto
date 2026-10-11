@@ -3,12 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Mining Farm</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
   body { background: #0a0e14; color: #e8e8e8; font-family: -apple-system, 'Segoe UI', Arial, sans-serif; overflow: hidden; height: 100vh; touch-action: manipulation; }
   #game { position: relative; width: 100vw; height: 100vh; display: flex; flex-direction: column; }
-
   #hud { display: grid; grid-template-columns: 1fr 1fr auto; gap: 4px; padding: 6px 8px; background: linear-gradient(180deg, #141a24, #0d1219); border-bottom: 1px solid #1f2a3a; font-size: 11px; flex-shrink: 0; align-items: stretch; }
   .hud-row { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); padding: 4px 8px; border-radius: 6px; border: 1px solid #1f2a3a; font-family: monospace; font-weight: bold; min-width: 0; }
   .hud-label { color: #6b7280; font-size: 10px; }
@@ -17,34 +19,30 @@
   #levelWrap { grid-column: 1 / -1; }
   .lvl-bar { height: 4px; background: #1f2a3a; border-radius: 2px; overflow: hidden; margin-top: 3px; }
   .lvl-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); transition: width 0.3s; }
-
   #settingsBtn { background: rgba(255,255,255,0.06); border: 1px solid #1f2a3a; color: #9ca3af; border-radius: 6px; padding: 0 12px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; min-width: 44px; }
   #settingsBtn:active { background: rgba(255,255,255,0.12); color: #fbbf24; }
-
   #tabs { display: flex; background: #0d1219; border-bottom: 1px solid #1f2a3a; flex-shrink: 0; overflow-x: auto; scrollbar-width: none; }
   #tabs::-webkit-scrollbar { display: none; }
   .tab { flex: 0 0 auto; min-width: 68px; padding: 10px 8px; background: transparent; border: none; color: #6b7280; font-size: 12px; font-weight: bold; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
   .tab.active { color: #fbbf24; border-bottom-color: #fbbf24; background: rgba(251,191,36,0.05); }
-
   #content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 10px; -webkit-overflow-scrolling: touch; }
   .page { display: none; } .page.active { display: block; }
-
-  .sub-tabs { display: flex; gap: 4px; margin-bottom: 10px; background: #0a0e14; border: 1px solid #1f2a3a; border-radius: 10px; padding: 4px; }
-  .sub-tab { flex: 1; padding: 8px 6px; border-radius: 6px; background: transparent; border: none; color: #9ca3af; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+  .sub-tabs { display: flex; gap: 4px; margin-bottom: 10px; background: #0a0e14; border: 1px solid #1f2a3a; border-radius: 10px; padding: 4px; overflow-x: auto; scrollbar-width: none; }
+  .sub-tabs::-webkit-scrollbar { display: none; }
+  .sub-tab { flex: 1 0 auto; min-width: 74px; padding: 8px 6px; border-radius: 6px; background: transparent; border: none; color: #9ca3af; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; }
   .sub-tab.active { background: rgba(251,191,36,0.15); color: #fbbf24; }
-
   .section-title { font-size: 11px; color: #9ca3af; letter-spacing: 1px; text-transform: uppercase; margin: 12px 4px 6px; font-weight: bold; }
   .section-title:first-child { margin-top: 0; }
-
   .item { background: linear-gradient(135deg, #141a24, #0f151d); border: 1px solid #1f2a3a; border-radius: 10px; padding: 8px 10px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 56px; }
   .item.locked { opacity: 0.45; }
   .item.owned { border-color: #4ade80; }
   .item.owned-green { border-color: #4ade80; background: linear-gradient(135deg, #0f2417, #0a1a10); }
   .item.dead { opacity: 0.6; filter: grayscale(0.5); }
+  .item.rack-owned { border-color: #c084fc; background: linear-gradient(135deg, #1a1030, #0f0820); }
   .item-info { flex: 1; min-width: 0; padding-right: 4px; }
   .item-name { font-size: 12px; font-weight: bold; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .item-stats { font-size: 10px; color: #9ca3af; line-height: 1.35; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .item-stats .hl { color: #60a5fa; } .item-stats .hl-green { color: #4ade80; } .item-stats .hl-gold { color: #fbbf24; } .item-stats .hl-red { color: #ef4444; }
+  .item-stats .hl { color: #60a5fa; } .item-stats .hl-green { color: #4ade80; } .item-stats .hl-gold { color: #fbbf24; } .item-stats .hl-purple { color: #c084fc; }
   .item-lvl { color: #c084fc; font-weight: bold; }
   .item-btn { padding: 7px 10px; border-radius: 8px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; white-space: nowrap; min-width: 82px; text-align: center; flex-shrink: 0; }
   .item-btns { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
@@ -58,40 +56,50 @@
   .btn-repair { background: #22d3ee; color: #000; font-size: 10px; padding: 5px 8px; min-width: 82px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
   .btn-repair:active { background: #06b6d4; }
   .btn-repair:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
-
   .farm-control { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
   .farm-btn { padding: 12px; border-radius: 10px; border: 2px solid; font-weight: bold; font-size: 13px; cursor: pointer; background: transparent; }
   .farm-btn.start { color: #4ade80; border-color: #4ade80; } .farm-btn.start.active { background: #4ade80; color: #000; } .farm-btn.start:disabled { color: #374151; border-color: #374151; cursor: not-allowed; }
   .farm-btn.stop { color: #ef4444; border-color: #ef4444; } .farm-btn.stop.active { background: #ef4444; color: #fff; } .farm-btn.stop:disabled { color: #374151; border-color: #374151; cursor: not-allowed; }
-
   .farm-status { background: linear-gradient(135deg, #0f2417, #0a1a10); border: 1px solid #1f4a2a; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
   .farm-status.off { background: linear-gradient(135deg, #2a1010, #1a0a0a); border-color: #4a1f1f; }
   .farm-status-title { font-size: 11px; color: #4ade80; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; font-weight: bold; }
   .farm-status.off .farm-status-title { color: #ef4444; }
   .farm-stat-row { display: flex; justify-content: space-between; font-size: 11px; font-family: monospace; padding: 3px 0; color: #9ca3af; gap: 8px; }
   .farm-stat-row .val { color: #fff; font-weight: bold; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%; }
-
   .farm-bonus { background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.3); border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; font-size: 10px; color: #60a5fa; font-family: monospace; }
   .farm-bonus.warn { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); color: #ef4444; }
   .farm-bonus.tax { background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.4); color: #fbbf24; }
-
+  .farm-bonus.rack { background: rgba(192,132,252,0.08); border-color: rgba(192,132,252,0.4); color: #c084fc; }
   .desk-wrap { background: linear-gradient(135deg, #141a24, #0f151d); border: 1px solid #1f2a3a; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
   .desk-title { font-size: 11px; color: #9ca3af; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; font-weight: bold; display: flex; justify-content: space-between; }
   .desk-section-label { font-size: 10px; color: #60a5fa; letter-spacing: 1px; text-transform: uppercase; margin: 10px 0 6px; font-weight: bold; padding-left: 2px; }
   .desk-section-label:first-child { margin-top: 0; }
-  .desk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
-  .slot { aspect-ratio: 1; background: #0a0e14; border: 1px dashed #2a3548; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-  .slot.filled { border-style: solid; border-color: #4ade80; background: #0f1a14; }
-  .slot.filled.dead { border-color: #6b7280; background: #1a1a1a; }
-  .slot svg { width: 90%; height: 90%; }
-  .slot-lvl { position: absolute; top: 2px; right: 4px; font-size: 9px; color: #c084fc; font-weight: bold; font-family: monospace; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px; }
-  .slot-wear { position: absolute; bottom: 0; left: 0; height: 4px; transition: width 0.4s; }
-  .slot-wear.ok { background: #4ade80; }
-  .slot-wear.mid { background: #fbbf24; }
-  .slot-wear.bad { background: #ef4444; }
-  .slot-wear.dead { background: #6b7280; }
-  .slot-warn { position: absolute; bottom: 5px; left: 4px; font-size: 10px; }
-
+  .desk-section-label.rack { color: #c084fc; }
+  .desk-empty { text-align: center; color: #6b7280; font-size: 11px; padding: 12px; font-family: monospace; }
+  .rack-view { background: linear-gradient(180deg, #0a0e14, #050810); border: 2px solid #2a3548; border-radius: 10px; padding: 10px; margin-bottom: 10px; position: relative; overflow: hidden; }
+  .rack-view.active { border-color: #c084fc; box-shadow: 0 0 20px rgba(192,132,252,0.2); }
+  .rack-view.hydro { border-color: #60a5fa; box-shadow: 0 0 20px rgba(96,165,250,0.2); }
+  .rack-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 11px; font-family: monospace; }
+  .rack-header .rack-name { color: #c084fc; font-weight: bold; letter-spacing: 1px; }
+  .rack-header .rack-lvl { color: #fbbf24; }
+  .rack-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; min-height: 80px; }
+  .mb-slot { aspect-ratio: 1; background: #0a0e14; border: 1px dashed #2a3548; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .mb-slot.filled { border-style: solid; border-color: #60a5fa; background: #0a1520; }
+  .mb-slot.active { border-color: #4ade80; background: #0f1a14; }
+  .mb-slot svg { width: 90%; height: 90%; }
+  .mb-slot .slot-tag { position: absolute; top: 2px; left: 4px; font-size: 8px; color: #60a5fa; font-weight: bold; font-family: monospace; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px; }
+  .mb-slot .slot-lvl { position: absolute; top: 2px; right: 4px; font-size: 8px; color: #c084fc; font-weight: bold; font-family: monospace; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px; }
+  .gpu-slot { aspect-ratio: 1; background: #0a0e14; border: 1px dashed #2a3548; border-radius: 8px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .gpu-slot.filled { border-style: solid; border-color: #4ade80; background: #0f1a14; }
+  .gpu-slot.filled.dead { border-color: #6b7280; background: #1a1a1a; }
+  .gpu-slot svg { width: 90%; height: 90%; }
+  .gpu-slot .slot-lvl { position: absolute; top: 2px; right: 4px; font-size: 8px; color: #c084fc; font-weight: bold; font-family: monospace; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 4px; }
+  .gpu-slot .slot-wear { position: absolute; bottom: 0; left: 0; height: 4px; transition: width 0.4s; }
+  .gpu-slot .slot-wear.ok { background: #4ade80; }
+  .gpu-slot .slot-wear.mid { background: #fbbf24; }
+  .gpu-slot .slot-wear.bad { background: #ef4444; }
+  .gpu-slot .slot-wear.dead { background: #6b7280; }
+  .gpu-slot .slot-warn { position: absolute; bottom: 5px; left: 4px; font-size: 10px; }
   .wear-bar { height: 3px; background: #1f2a3a; border-radius: 2px; overflow: hidden; margin-top: 3px; width: 100%; }
   .wear-fill { height: 100%; transition: width 0.4s, background 0.4s; }
   .wear-fill.ok { background: #4ade80; }
@@ -101,25 +109,19 @@
   .item-wear { font-size: 9px; font-family: monospace; color: #9ca3af; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .item-wear .warn { color: #ef4444; font-weight: bold; }
   .item-wear .dead { color: #6b7280; font-weight: bold; }
-
   .desk-info { display: flex; gap: 10px; align-items: center; background: #0a0e14; border: 1px solid #1f2a3a; border-radius: 8px; padding: 8px 10px; margin-top: 6px; }
   .desk-info-icon { width: 56px; height: 56px; flex-shrink: 0; }
   .desk-info-name { font-size: 11px; font-weight: bold; color: #fff; margin-bottom: 2px; }
   .desk-info-desc { font-size: 10px; color: #9ca3af; font-family: monospace; }
   .desk-info-desc .lvl { color: #c084fc; font-weight: bold; }
-  .desk-empty { text-align: center; color: #6b7280; font-size: 11px; padding: 12px; font-family: monospace; }
-
   #toast-container { position: absolute; top: 90px; left: 50%; transform: translateX(-50%); z-index: 100; pointer-events: none; display: flex; flex-direction: column; gap: 4px; align-items: center; width: 90%; max-width: 320px; }
   .toast { background: rgba(20,26,36,0.95); border: 1px solid #fbbf24; color: #fbbf24; padding: 7px 14px; border-radius: 8px; font-size: 11px; font-weight: bold; box-shadow: 0 4px 16px rgba(0,0,0,0.5); animation: toastAnim 1.8s ease-out forwards; font-family: monospace; text-align: center; }
   .toast.green { border-color: #4ade80; color: #4ade80; } .toast.red { border-color: #ef4444; color: #ef4444; }
   @keyframes toastAnim { 0% { opacity: 0; transform: translateY(-10px); } 15% { opacity: 1; transform: translateY(0); } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(-20px); } }
-
   #ticker { background: #0d1219; border-top: 1px solid #1f2a3a; padding: 5px 8px; font-size: 10px; font-family: monospace; display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; flex-shrink: 0; scrollbar-width: none; }
   #ticker::-webkit-scrollbar { display: none; }
   .ticker-item { color: #9ca3af; } .ticker-item .up { color: #4ade80; } .ticker-item .down { color: #ef4444; }
-
   .empty-msg { text-align: center; color: #6b7280; padding: 30px 20px; font-size: 12px; }
-
   .crypto-chips { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 8px; scrollbar-width: none; margin-bottom: 6px; }
   .crypto-chips::-webkit-scrollbar { display: none; }
   .chip { flex: 0 0 auto; padding: 6px 12px; border-radius: 20px; border: 1px solid #1f2a3a; background: rgba(255,255,255,0.03); color: #9ca3af; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; font-family: monospace; }
@@ -145,7 +147,6 @@
   .chart-hold-info b { color: #fff; }
   .btn-sell { background: #4ade80; color: #000; border: none; padding: 7px 14px; border-radius: 8px; font-weight: bold; font-size: 11px; cursor: pointer; }
   .btn-sell:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
-
   #settingsModal { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
   #settingsModal.show { display: flex; }
   .settings-panel { background: linear-gradient(135deg, #141a24, #0d1219); border: 1px solid #fbbf24; border-radius: 14px; padding: 20px; width: 100%; max-width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.7); max-height: 90vh; overflow-y: auto; }
@@ -160,8 +161,6 @@
   .settings-btn.reset:active { background: #dc2626; }
   .settings-btn.close { background: #374151; color: #e8e8e8; }
   .settings-btn.close:active { background: #4b5563; }
-
-  /* === AFK / НАЛОГ МОДАЛКА === */
   #reportModal, #afkModal { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.88); z-index: 300; display: none; align-items: center; justify-content: center; padding: 16px; }
   #reportModal.show, #afkModal.show { display: flex; }
   .report-panel { background: linear-gradient(135deg, #141a24, #0d1219); border: 1px solid #4ade80; border-radius: 14px; padding: 18px; width: 100%; max-width: 380px; box-shadow: 0 8px 32px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto; font-family: monospace; }
@@ -191,13 +190,38 @@
   .afk-btn { padding: 10px; border-radius: 8px; border: none; font-weight: bold; font-size: 11px; cursor: pointer; }
   .afk-btn.go { background: #60a5fa; color: #000; }
   .afk-btn.cancel { background: #374151; color: #e8e8e8; }
-
   @keyframes spinFan { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   .spin-0 { animation: spinFan 1.2s linear infinite; }
   .spin-1 { animation: spinFan 1.5s linear infinite; }
   .spin-2 { animation: spinFan 1.0s linear infinite; }
   @keyframes neonPulse { 0%, 100% { opacity: 0.95; } 50% { opacity: 0.5; } }
   .neon-pulse { animation: neonPulse 2.5s ease-in-out infinite; }
+  @keyframes rgbShift { 0% { stroke: #ff0066; } 25% { stroke: #6600ff; } 50% { stroke: #00ddff; } 75% { stroke: #00ff66; } 100% { stroke: #ff0066; } }
+  .rgb-cycle { animation: rgbShift 5s linear infinite; }
+  @keyframes rgbFill { 0% { fill: #ff0066; } 25% { fill: #6600ff; } 50% { fill: #00ddff; } 75% { fill: #00ff66; } 100% { fill: #ff0066; } }
+  .rgb-fill { animation: rgbFill 5s linear infinite; }
+  .quest-item { background: linear-gradient(135deg,#141a24,#0f151d); border:1px solid #1f2a3a; border-radius:10px; padding:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .quest-item.done { border-color:#4ade80; background:linear-gradient(135deg,#0f2417,#0a1a10); }
+  .quest-item.claimed { opacity:0.5; }
+  .quest-info { flex:1; min-width:0; }
+  .quest-name { font-size:12px; font-weight:bold; color:#fff; margin-bottom:3px; }
+  .quest-desc { font-size:10px; color:#9ca3af; font-family:monospace; }
+  .quest-prog { height:4px; background:#1f2a3a; border-radius:2px; margin-top:5px; overflow:hidden; }
+  .quest-prog-fill { height:100%; background:linear-gradient(90deg,#4ade80,#22d3ee); transition:width 0.3s; }
+  .quest-reward { font-size:10px; color:#c084fc; font-family:monospace; margin-top:3px; }
+  .btn-claim { background:#4ade80; color:#000; border:none; padding:8px 12px; border-radius:8px; font-weight:bold; font-size:11px; cursor:pointer; min-width:90px; }
+  .btn-claim:disabled { background:#374151; color:#6b7280; cursor:not-allowed; }
+  .case-card { background:linear-gradient(135deg,#141a24,#0f151d); border:2px solid #1f2a3a; border-radius:12px; padding:14px; margin-bottom:10px; text-align:center; }
+  .case-card.common { border-color:#60a5fa; }
+  .case-card.rare { border-color:#c084fc; box-shadow:0 0 20px rgba(192,132,252,0.2); }
+  .case-card.legendary { border-color:#fbbf24; box-shadow:0 0 25px rgba(251,191,36,0.3); }
+  .case-icon { font-size:42px; margin-bottom:6px; }
+  .case-name { font-size:14px; font-weight:bold; color:#fff; margin-bottom:4px; }
+  .case-desc { font-size:10px; color:#9ca3af; font-family:monospace; margin-bottom:10px; line-height:1.5; }
+  .btn-open { background:#fbbf24; color:#000; border:none; padding:10px 20px; border-radius:10px; font-weight:bold; font-size:12px; cursor:pointer; }
+  .btn-open:disabled { background:#374151; color:#6b7280; cursor:not-allowed; }
+  @keyframes caseOpen { 0%{transform:scale(1)} 50%{transform:scale(1.15)} 100%{transform:scale(1)} }
+  .case-opening { animation: caseOpen 0.5s ease-out; }
 </style>
 </head>
 <body>
@@ -209,30 +233,31 @@
     <div class="hud-row"><span class="hud-label" data-i18n="psuShort">🔋 БП</span><span class="hud-val blue" id="powerInfo">0 / 550 W</span></div>
     <div class="hud-row"><span class="hud-label" data-i18n="levelShort">⭐ Ур.</span><span class="hud-val purple" id="level">1</span></div>
     <div class="hud-row"><span class="hud-label" data-i18n="debtLabel">📉 Долг</span><span class="hud-val red" id="debtInfo">$0.000000</span></div>
+    <div class="hud-row"><span class="hud-label">💎 Рубины</span><span class="hud-val purple" id="rubies">0</span></div>
     <div class="hud-row" id="levelWrap">
       <span class="hud-label" data-i18n="xpLabel">Опыт (с продаж)</span>
       <span class="hud-val" id="xpInfo">0 / 200</span>
       <div class="lvl-bar" style="margin-top:4px; width:100%; grid-column: 1 / -1;"><div class="lvl-fill" id="lvlFill" style="width:0%"></div></div>
     </div>
   </div>
-
   <div id="tabs">
     <button class="tab active" data-page="farm" data-i18n="tabFarm">⚙ Ферма</button>
     <button class="tab" data-page="desk" data-i18n="tabDesk">🖥 Стол</button>
     <button class="tab" data-page="shop" data-i18n="tabShop">🛒 Магазин</button>
     <button class="tab" data-page="crypto" data-i18n="tabCrypto">💹 Курс</button>
+    <button class="tab" data-page="quests" data-i18n="tabQuests">📜 Квесты</button>
+    <button class="tab" data-page="cases" data-i18n="tabCases">🎁 Кейсы</button>
   </div>
-
   <div id="content">
     <div class="page active" id="page-farm"></div>
     <div class="page" id="page-desk"></div>
     <div class="page" id="page-shop"></div>
     <div class="page" id="page-crypto"></div>
+    <div class="page" id="page-quests"></div>
+    <div class="page" id="page-cases"></div>
   </div>
-
   <div id="ticker"></div>
   <div id="toast-container"></div>
-
   <div id="settingsModal">
     <div class="settings-panel">
       <div class="settings-title" data-i18n="settingsTitle">⚙ Настройки</div>
@@ -242,13 +267,17 @@
         <button class="lang-btn" data-lang="en">English</button>
         <button class="lang-btn" data-lang="es">Español</button>
       </div>
+      <div class="settings-section-title">Промокод</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <input type="text" id="promoInput" placeholder="Введите код" style="flex:1;padding:10px;border-radius:8px;border:1px solid #374151;background:#0a0e14;color:#e8e8e8;font-size:12px;">
+        <button id="promoBtn" style="padding:10px 14px;border-radius:8px;border:none;background:#fbbf24;color:#000;font-weight:bold;cursor:pointer;">OK</button>
+      </div>
       <div class="settings-section-title" data-i18n="actions">Действия</div>
       <div class="settings-desc" data-i18n="resetDesc">Сбросить прогресс и начать заново? Все покупки, деньги и уровень будут удалены.</div>
       <button class="settings-btn reset" id="btnReset" data-i18n="reset">🔄 Начать заново</button>
       <button class="settings-btn close" id="btnCloseSettings" data-i18n="close">Закрыть</button>
     </div>
   </div>
-
   <div id="afkModal">
     <div class="afk-panel">
       <div class="afk-title">🌙 Уход в AFK-режим</div>
@@ -261,7 +290,6 @@
       </div>
     </div>
   </div>
-
   <div id="reportModal">
     <div class="report-panel" id="reportPanel">
       <div class="report-title" id="reportTitle">📊 Отчёт</div>
@@ -270,7 +298,6 @@
     </div>
   </div>
 </div>
-
 <script>
 // ============ ЛОКАЛИЗАЦИЯ ============
 const TRANSLATIONS = {
@@ -278,7 +305,8 @@ const TRANSLATIONS = {
     usd: '💵 USD', hash: '⚡ Хеш', psuShort: '🔋 БП', levelShort: '⭐ Ур.', xpLabel: 'Опыт (с продаж)',
     debtLabel: '📉 Долг',
     tabFarm: '⚙ Ферма', tabDesk: '🖥 Стол', tabShop: '🛒 Магазин', tabCrypto: '💹 Курс',
-    subGpu: '🎮 Видеокарты', subMb: '🧩 Платы', subCool: '❄ Охлаждение', subPsu: '⚡ БП',
+    tabQuests: '📜 Квесты', tabCases: '🎁 Кейсы',
+    subGpu: '🎮 Видеокарты', subMb: '🧩 Платы', subCool: '❄ Охлаждение', subPsu: '⚡ БП', subRack: '🏗 Стойка',
     settingsTitle: '⚙ Настройки', language: 'Язык', actions: 'Действия',
     resetDesc: 'Сбросить прогресс и начать заново? Все покупки, деньги и уровень будут удалены.',
     reset: '🔄 Начать заново', close: 'Закрыть',
@@ -293,10 +321,13 @@ const TRANSLATIONS = {
     inStock: 'в наличии',
     workTable: '🖥 Рабочий стол', gpuTab: 'GPU',
     gpuSection: '🎮 Видеокарты · ', slots: 'слотов',
-    buyMbFirst: 'Купи системную плату, чтобы ставить GPU',
+    buyMbFirst: 'Купи материнскую плату, чтобы ставить GPU',
+    buyRackFirst: 'Купи стойку в магазине, чтобы ставить материнские платы',
     sysMb: '🧩 Системная плата', mbSlots: 'Слотов: ', notInstalled: 'Не установлена',
     cooling: '❄ Охлаждение', coolBonusShort: 'Бонус: +', notInstalledN: 'Не установлено',
     psu: '⚡ Блок питания', powerW: 'Мощность: ', notInstalledM: 'Не установлен',
+    rack: '🏗 Стойка', rackSlots: 'Слотов под платы: ', notInstalledRack: 'Не установлена',
+    rackLabel: 'Стойка', rackLvl: 'L',
     shop: '🛒 Магазин',
     buy: 'Купить', upgrade: 'Прокачать', max: 'MAX', maxLvl: 'MAX уровень',
     upgradeFor: 'Прокачать за $', level: 'Уровень', toMax: 'до MAX',
@@ -311,7 +342,7 @@ const TRANSLATIONS = {
     bought: 'Куплено: ', upgraded: 'Прокачано: ', maxReached: 'Максимум прокачки',
     resetDone: 'Прогресс сброшен', noCrypt: 'Выбери крипту', noGpu: 'Нет видеокарт',
     psuOverload: 'БП перегружен', farmStarted: 'Ферма запущена', farmStopped: 'Ферма отключена',
-    needMbFirst: 'Сначала купи системную плату', upgradeCost: 'Стоимость апгрейда',
+    needMbFirst: 'Сначала купи материнскую плату', needRackFirst: 'Сначала купи стойку', upgradeCost: 'Стоимость апгрейда',
     buyNow: 'Купить за $',
     wear: 'Износ', wearDead: '💀 МЕРТВА', wearCrit: '⚠ КРИТИЧНО', wearBad: '⚠ Сильный',
     repair: 'Ремонт', repaired: '🔧 Отремонтировано: ', repairNeeded: 'Карта в порядке',
@@ -327,13 +358,18 @@ const TRANSLATIONS = {
     reportTaxPaid: 'Налог списан: ', reportNet: 'Чистая прибыль: ',
     reportEnergy: 'Потреблено: ', reportDevices: 'Приборов работает: ',
     reportConfiscated: '🚨 КОНФИСКОВАНО ОБОРУДОВАНИЕ!',
-    reportTake: 'Забрать всё'
+    reportTake: 'Забрать всё',
+    hydroRequired: '🔒 Требуется гидростойка или контейнер',
+    rackInfo: '🏗 Стойка определяет, сколько материнских плат можно установить. Апгрейд стойки добавляет +1 плату каждые 5 уровней и +1 слот к каждой плате.',
+    noRack: 'Нет стойки',
+    noRackShort: 'Купи стойку'
   },
   en: {
     usd: '💵 USD', hash: '⚡ Hash', psuShort: '🔋 PSU', levelShort: '⭐ Lvl.', xpLabel: 'XP (from sales)',
     debtLabel: '📉 Debt',
     tabFarm: '⚙ Farm', tabDesk: '🖥 Desk', tabShop: '🛒 Shop', tabCrypto: '💹 Rates',
-    subGpu: '🎮 GPUs', subMb: '🧩 Boards', subCool: '❄ Cooling', subPsu: '⚡ PSU',
+    tabQuests: '📜 Quests', tabCases: '🎁 Cases',
+    subGpu: '🎮 GPUs', subMb: '🧩 Boards', subCool: '❄ Cooling', subPsu: '⚡ PSU', subRack: '🏗 Rack',
     settingsTitle: '⚙ Settings', language: 'Language', actions: 'Actions',
     resetDesc: 'Reset progress and start over? All purchases, money and level will be deleted.',
     reset: '🔄 Restart', close: 'Close',
@@ -347,10 +383,13 @@ const TRANSLATIONS = {
     mine: 'Mine', chosen: '✓ Selected', lvlShort: 'Lvl. ',
     inStock: 'holding', workTable: '🖥 Work table', gpuTab: 'GPU',
     gpuSection: '🎮 GPUs · ', slots: 'slots',
-    buyMbFirst: 'Buy a system board to install GPUs',
+    buyMbFirst: 'Buy a motherboard to install GPUs',
+    buyRackFirst: 'Buy a rack in the shop to install motherboards',
     sysMb: '🧩 System board', mbSlots: 'Slots: ', notInstalled: 'Not installed',
     cooling: '❄ Cooling', coolBonusShort: 'Bonus: +', notInstalledN: 'Not installed',
     psu: '⚡ Power supply', powerW: 'Power: ', notInstalledM: 'Not installed',
+    rack: '🏗 Rack', rackSlots: 'MB slots: ', notInstalledRack: 'Not installed',
+    rackLabel: 'Rack', rackLvl: 'L',
     shop: '🛒 Shop', buy: 'Buy', upgrade: 'Upgrade', max: 'MAX', maxLvl: 'Max level',
     upgradeFor: 'Upgrade for $', level: 'Level', toMax: 'to MAX',
     youHave: 'you have', stocks: 'stock',
@@ -363,7 +402,7 @@ const TRANSLATIONS = {
     bought: 'Bought: ', upgraded: 'Upgraded: ', maxReached: 'Max upgrade',
     resetDone: 'Progress reset', noCrypt: 'Choose a coin', noGpu: 'No GPUs',
     psuOverload: 'PSU overloaded', farmStarted: 'Farm started', farmStopped: 'Farm stopped',
-    needMbFirst: 'Buy a system board first', upgradeCost: 'Upgrade cost', buyNow: 'Buy for $',
+    needMbFirst: 'Buy a motherboard first', needRackFirst: 'Buy a rack first', upgradeCost: 'Upgrade cost', buyNow: 'Buy for $',
     wear: 'Wear', wearDead: '💀 DEAD', wearCrit: '⚠ CRITICAL', wearBad: '⚠ Heavy',
     repair: 'Repair', repaired: '🔧 Repaired: ', repairNeeded: 'Card is fine',
     wearInfo: '⭐ Wear grows while mining. Cooling slows it down.',
@@ -373,13 +412,18 @@ const TRANSLATIONS = {
     reportTitle: '📊 AFK SESSION REPORT', reportTax: '⚡ TAX', reportFinance: '💰 FINANCE', reportEvents: '📈 EVENTS',
     reportDuration: 'Duration: ', reportEarned: 'Earned: ', reportTaxPaid: 'Tax paid: ',
     reportNet: 'Net profit: ', reportEnergy: 'Consumed: ', reportDevices: 'Devices running: ',
-    reportConfiscated: '🚨 EQUIPMENT CONFISCATED!', reportTake: 'Take all'
+    reportConfiscated: '🚨 EQUIPMENT CONFISCATED!', reportTake: 'Take all',
+    hydroRequired: '🔒 Requires hydro rack or container',
+    rackInfo: '🏗 Rack determines how many motherboards you can install. Upgrading adds +1 board every 5 levels and +1 slot to each board.',
+    noRack: 'No rack',
+    noRackShort: 'Buy rack'
   },
   es: {
     usd: '💵 USD', hash: '⚡ Hash', psuShort: '🔋 Fuente', levelShort: '⭐ Niv.', xpLabel: 'XP (ventas)',
     debtLabel: '📉 Deuda',
     tabFarm: '⚙ Granja', tabDesk: '🖥 Mesa', tabShop: '🛒 Tienda', tabCrypto: '💹 Tasas',
-    subGpu: '🎮 GPUs', subMb: '🧩 Placas', subCool: '❄ Refrigeración', subPsu: '⚡ Fuente',
+    tabQuests: '📜 Misiones', tabCases: '🎁 Cajas',
+    subGpu: '🎮 GPUs', subMb: '🧩 Placas', subCool: '❄ Refrigeración', subPsu: '⚡ Fuente', subRack: '🏗 Rack',
     settingsTitle: '⚙ Ajustes', language: 'Idioma', actions: 'Acciones',
     resetDesc: '¿Reiniciar el progreso? Todas las compras, dinero y nivel se borrarán.',
     reset: '🔄 Reiniciar', close: 'Cerrar',
@@ -394,9 +438,12 @@ const TRANSLATIONS = {
     inStock: 'en stock', workTable: '🖥 Mesa de trabajo', gpuTab: 'GPU',
     gpuSection: '🎮 GPUs · ', slots: 'slots',
     buyMbFirst: 'Compra una placa base para instalar GPUs',
+    buyRackFirst: 'Compra un rack en la tienda para instalar placas',
     sysMb: '🧩 Placa base', mbSlots: 'Slots: ', notInstalled: 'No instalada',
     cooling: '❄ Refrigeración', coolBonusShort: 'Bono: +', notInstalledN: 'No instalado',
     psu: '⚡ Fuente de alimentación', powerW: 'Potencia: ', notInstalledM: 'No instalada',
+    rack: '🏗 Rack', rackSlots: 'Slots MB: ', notInstalledRack: 'No instalado',
+    rackLabel: 'Rack', rackLvl: 'L',
     shop: '🛒 Tienda', buy: 'Comprar', upgrade: 'Mejorar', max: 'MÁX', maxLvl: 'Nivel máx',
     upgradeFor: 'Mejorar por $', level: 'Nivel', toMax: 'a MÁX',
     youHave: 'tienes', stocks: 'stock',
@@ -409,7 +456,7 @@ const TRANSLATIONS = {
     bought: 'Comprado: ', upgraded: 'Mejorado: ', maxReached: 'Mejora máxima',
     resetDone: 'Progreso reiniciado', noCrypt: 'Elige una moneda', noGpu: 'No hay GPUs',
     psuOverload: 'Fuente sobrecargada', farmStarted: 'Granja iniciada', farmStopped: 'Granja detenida',
-    needMbFirst: 'Compra una placa base primero', upgradeCost: 'Coste de mejora', buyNow: 'Comprar por $',
+    needMbFirst: 'Compra una placa base primero', needRackFirst: 'Compra un rack primero', upgradeCost: 'Coste de mejora', buyNow: 'Comprar por $',
     wear: 'Desgaste', wearDead: '💀 MUERTA', wearCrit: '⚠ CRÍTICO', wearBad: '⚠ Fuerte',
     repair: 'Reparar', repaired: '🔧 Reparada: ', repairNeeded: 'La tarjeta está bien',
     wearInfo: '⭐ El desgaste crece minando. La refrigeración lo frena.',
@@ -419,10 +466,13 @@ const TRANSLATIONS = {
     reportTitle: '📊 INFORME AFK', reportTax: '⚡ IMPUESTO', reportFinance: '💰 FINANZAS', reportEvents: '📈 EVENTOS',
     reportDuration: 'Duración: ', reportEarned: 'Ganado: ', reportTaxPaid: 'Impuesto pagado: ',
     reportNet: 'Beneficio neto: ', reportEnergy: 'Consumido: ', reportDevices: 'Dispositivos: ',
-    reportConfiscated: '🚨 ¡EQUIPO CONFISCADO!', reportTake: 'Recoger todo'
+    reportConfiscated: '🚨 ¡EQUIPO CONFISCADO!', reportTake: 'Recoger todo',
+    hydroRequired: '🔒 Requiere rack hidro o contenedor',
+    rackInfo: '🏗 El rack determina cuántas placas base puedes instalar. Mejorar añade +1 placa cada 5 niveles y +1 slot a cada placa.',
+    noRack: 'Sin rack',
+    noRackShort: 'Compra un rack'
   }
 };
-
 let currentLang = 'ru';
 function t(key) { return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) || TRANSLATIONS.ru[key] || key; }
 function applyTranslations() {
@@ -433,7 +483,6 @@ function applyTranslations() {
   });
   document.getElementById('settingsBtn').title = t('settingsTitle');
 }
-
 // ============ ДАННЫЕ ============
 const CRYPTOS = [
   { id: 'trx',  name: 'Tron',      short: 'TRX',  basePrice: 0.18,  rate: 8.0,  icon: '◈', color: '#eb0029', lvl: 1 },
@@ -445,7 +494,6 @@ const CRYPTOS = [
   { id: 'btc',  name: 'Bitcoin',   short: 'BTC',  basePrice: 78000, rate: 0.6,  icon: '₿', color: '#f7931a', lvl: 22 }
 ];
 CRYPTOS.sort((a,b) => a.basePrice - b.basePrice);
-
 const GPUS = [
   { name: 'GeForce RTX 2060',         price: 400,             hash: 25,  power: 160, lvl: 1,  fans: 1, tier: 1 },
   { name: 'GeForce RTX 2060 SUPER',   price: 1600,            hash: 30,  power: 175, lvl: 2,  fans: 2, tier: 1 },
@@ -476,7 +524,6 @@ const GPUS = [
   { name: 'GeForce RTX 5060',         price: 1801439850948198400,hash: 105,power: 145, lvl: 27, fans: 3, tier: 7 },
   { name: 'GeForce RTX 5060 Ti',      price: 7205759403792793600,hash: 120,power: 180, lvl: 28, fans: 3, tier: 7 }
 ];
-
 const MOTHERBOARDS = [
   { name: 'MSI PRO H610M-E DDR4',           price: 900,        slots: 1,  lvl: 1 },
   { name: 'MSI PRO B760M-P DDR4',           price: 2700,       slots: 2,  lvl: 3 },
@@ -487,16 +534,14 @@ const MOTHERBOARDS = [
   { name: 'MSI MAG B850 TOMAHAWK WIFI',     price: 656100,     slots: 10, lvl: 20 },
   { name: 'MSI MAG B850 TOMAHAWK MAX II',   price: 1968300,    slots: 12, lvl: 24 }
 ];
-
 const COOLING = [
-  { name: 'Воздушное охлаждение',            price: 100,   bonus: 0.05, lvl: 1,  type: 'air' },
-  { name: 'Водяное охлаждение',              price: 300,   bonus: 0.15, lvl: 3,  type: 'water' },
-  { name: 'Иммерсионное охлаждение',         price: 900,   bonus: 0.25, lvl: 6,  type: 'immersion' },
-  { name: 'Воздушно-водяное охлаждение',     price: 2700,  bonus: 0.35, lvl: 10, type: 'hybrid' },
-  { name: 'Иммерсивно-водяное охлаждение',   price: 8100,  bonus: 0.50, lvl: 14, type: 'imm-water' },
-  { name: 'Иммерсивно-воздушное охлаждение', price: 24300, bonus: 0.70, lvl: 18, type: 'imm-air' }
+  { name: 'Воздушное охлаждение',            price: 100,   bonus: 0.05, lvl: 1,  type: 'air',       hydro: false },
+  { name: 'Водяное охлаждение',              price: 300,   bonus: 0.15, lvl: 3,  type: 'water',     hydro: true  },
+  { name: 'Иммерсионное охлаждение',         price: 900,   bonus: 0.25, lvl: 6,  type: 'immersion', hydro: true  },
+  { name: 'Воздушно-водяное охлаждение',     price: 2700,  bonus: 0.35, lvl: 10, type: 'hybrid',    hydro: true  },
+  { name: 'Иммерсивно-водяное охлаждение',   price: 8100,  bonus: 0.50, lvl: 14, type: 'imm-water', hydro: true  },
+  { name: 'Иммерсивно-воздушное охлаждение', price: 24300, bonus: 0.70, lvl: 18, type: 'imm-air',   hydro: true  }
 ];
-
 const PSUs = [
   { name: 'Cooler Master MWE Bronze V2',     price: 900,       watts: 550,  lvl: 1 },
   { name: 'Thermaltake Smart BM2',           price: 2700,      watts: 650,  lvl: 3 },
@@ -510,59 +555,61 @@ const PSUs = [
   { name: 'MSI MEG Ai1600T',                 price: 17714700,  watts: 2000, lvl: 25 },
   { name: 'Seasonic Prime Ultra Platinum',   price: 53144100,  watts: 2500, lvl: 28 }
 ];
-
+const RACKS = [
+  { name: 'Полочный стеллаж',       price: 3000,      slotsBase: 1, lvl: 1,  hydro: false, visual: 'shelf' },
+  { name: 'Серверный стеллаж',      price: 50000,     slotsBase: 2, lvl: 5,  hydro: false, visual: 'server' },
+  { name: 'Гидростойка',            price: 500000,    slotsBase: 3, lvl: 10, hydro: true,  visual: 'hydro' },
+  { name: 'Контейнер для майнинга', price: 5000000,   slotsBase: 4, lvl: 16, hydro: true,  visual: 'container' }
+];
+const DAILY_QUESTS = [
+  { id:'mine',  name:'Добыть 1 монету',      desc:'Накопать любую крипту',        target:1,     reward:5,   track:'mined' },
+  { id:'sell',  name:'Продать на $100',      desc:'Продать крипту на сумму',      target:100,   reward:8,   track:'sold' },
+  { id:'start', name:'Запустить ферму',      desc:'Включить майнинг один раз',    target:1,     reward:3,   track:'started' }
+];
+const WEEKLY_QUESTS = [
+  { id:'mine',  name:'Добыть 1000 монет',    desc:'Накопать 1000 единиц крипты',  target:1000,  reward:500, track:'mined' },
+  { id:'sell',  name:'Продать на $5000',     desc:'Продать крипту на сумму',      target:5000,  reward:80,  track:'sold' },
+  { id:'buy',   name:'Купить 3 GPU',         desc:'Приобрести 3 видеокарты',      target:3,     reward:40,  track:'bought' },
+  { id:'level', name:'Поднять 2 уровня',     desc:'Повысить уровень персонажа',   target:2,     reward:100, track:'leveled' }
+];
+const CASES = [
+  { id:'common',    name:'Обычный кейс',    icon:'📦', cost:20,  desc:'Шанс: $500-$5000 (90%) или RTX 2060 (10%)', rewards:[
+    {t:'usd', min:500,  max:5000,  weight:90},
+    {t:'gpu', name:'GeForce RTX 2060', count:1, weight:10}
+  ]},
+  { id:'rare',      name:'Редкий кейс',     icon:'🎁', cost:80,  desc:'Шанс: $5000-$50000 (75%) или рубины (20%) или RTX 3060 (5%)', rewards:[
+    {t:'usd',    min:5000, max:50000, weight:75},
+    {t:'rubies', min:5,    max:20,    weight:20},
+    {t:'gpu',    name:'GeForce RTX 3060', count:1, weight:5}
+  ]},
+  { id:'legendary', name:'Легендарный кейс',icon:'👑', cost:300, desc:'Шанс: $100k-$1M (70%) или рубины (25%) или RTX 4070 (5%)', rewards:[
+    {t:'usd',    min:100000, max:1000000, weight:70},
+    {t:'rubies', min:50,     max:200,     weight:25},
+    {t:'gpu',    name:'GeForce RTX 4070', count:1, weight:5}
+  ]}
+];
 const MAX_UPGRADE = 25;
 const UPGRADE_BONUS = 0.08;
 const UPGRADE_COST_BASE = 0.35;
-
-// === НАЛОГ ===
-const TAX_RATE = 0.15;       // $/кВт·ч
-const TAX_INTERVAL_MS = 24 * 60 * 60 * 1000; // реальные 24 часа
-const AFK_LIMIT_MS = 24 * 60 * 60 * 1000;    // 24 часа AFK (обычный аккаунт)
-
-function upgradeCost(basePrice, currentLvl) {
-  return Math.floor(basePrice * UPGRADE_COST_BASE * currentLvl);
-}
-
+const TAX_RATE = 0.15;
+const TAX_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const AFK_LIMIT_MS = 24 * 60 * 60 * 1000;
+function upgradeCost(basePrice, currentLvl) { return Math.floor(basePrice * UPGRADE_COST_BASE * currentLvl); }
+function rackMbSlots(rack, lvl) { lvl = lvl || 1; return rack.slotsBase + Math.floor((lvl - 1) / 5); }
+function rackGpuBonus(rack, lvl) { lvl = lvl || 1; return Math.floor((lvl - 1) / 5); }
 // ============ СОСТОЯНИЕ ============
 const DEFAULT_STATE = {
-  usd: 5000,
-  level: 1,
-  xp: 0,
-  xpNeeded: 200,
-  powerCapacity: 550,
-  ownedGPU: {},
-  ownedMB: {},
-  ownedCool: {},
-  ownedPSU: {},
-  activeMB: null,
-  activeCool: null,
-  activePSU: 'Cooler Master MWE Bronze V2',
-  mbLvl: {},
-  coolLvl: {},
-  psuLvl: {},
-  crypto: {},
-  history: {},
-  currentMining: null,
-  farmRunning: false,
-  totalMined: 0,
-  currentChart: 'trx',
-  currentShopTab: 'gpu',
-  lang: 'ru',
-  // === НАЛОГ ===
-  taxDebt: 0,
-  taxDaysOverdue: 0,
-  lastTaxTime: Date.now(),
-  // === AFK ===
-  afkUntil: 0,
-  afkAutoTax: true,
-  afkEcoMode: true,
-  afkPauseOnDebt: true,
-  lastOnline: Date.now()
+  usd: 5000, level: 1, xp: 0, xpNeeded: 200, powerCapacity: 550,
+  ownedGPU: {}, ownedMB: {}, ownedCool: {}, ownedPSU: {}, ownedRack: {},
+  activeMB: null, activeCool: null, activePSU: 'Cooler Master MWE Bronze V2', activeRack: null,
+  mbLvl: {}, coolLvl: {}, psuLvl: {}, rackLvl: {},
+  crypto: {}, history: {}, currentMining: null, farmRunning: false, totalMined: 0,
+  currentChart: 'trx', currentShopTab: 'gpu', lang: 'ru',
+  taxDebt: 0, taxDaysOverdue: 0, lastTaxTime: Date.now(),
+  afkUntil: 0, afkAutoTax: true, afkEcoMode: true, afkPauseOnDebt: true, lastOnline: Date.now(),
+  rubies: 0, quests: {}, questsDate: '', questsWeek: '', casesOpened: 0, adminUnlocked: false
 };
-
 let state;
-
 function initState() {
   state = JSON.parse(JSON.stringify(DEFAULT_STATE));
   state.ownedPSU['Cooler Master MWE Bronze V2'] = true;
@@ -574,28 +621,22 @@ function initState() {
   state.lastTaxTime = Date.now();
   state.lastOnline = Date.now();
 }
-
-const SAVE_KEY = 'mining_farm_save_v8';
+const SAVE_KEY = 'mining_farm_save_v10';
 const HISTORY_MAX = 200;
-
 function save() {
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {}
+  try {
+    const snap = Object.assign({}, state);
+    if (snap.usd === Infinity) snap.usd = '__INF__';
+    if (snap.rubies === Infinity) snap.rubies = '__INF__';
+    localStorage.setItem(SAVE_KEY, JSON.stringify(snap));
+  } catch (e) {}
 }
 function load() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) { initState(); return; }
     const parsed = JSON.parse(raw);
-    if (!parsed.crypto) parsed.crypto = {};
-    if (!parsed.history) parsed.history = {};
-    if (!parsed.ownedGPU) parsed.ownedGPU = {};
-    if (!parsed.ownedMB) parsed.ownedMB = {};
-    if (!parsed.ownedCool) parsed.ownedCool = {};
-    if (!parsed.ownedPSU) parsed.ownedPSU = {};
-    if (!parsed.mbLvl) parsed.mbLvl = {};
-    if (!parsed.coolLvl) parsed.coolLvl = {};
-    if (!parsed.psuLvl) parsed.psuLvl = {};
-
+    ['crypto','history','ownedGPU','ownedMB','ownedCool','ownedPSU','ownedRack','mbLvl','coolLvl','psuLvl','rackLvl','quests'].forEach(k => { if (!parsed[k]) parsed[k] = {}; });
     for (const name in parsed.ownedGPU) {
       const v = parsed.ownedGPU[name];
       if (typeof v === 'number') parsed.ownedGPU[name] = { count: v, lvl: 1, wear: 0 };
@@ -607,7 +648,6 @@ function load() {
     }
     if (!parsed.ownedPSU['Cooler Master MWE Bronze V2']) parsed.ownedPSU['Cooler Master MWE Bronze V2'] = true;
     if (!parsed.psuLvl['Cooler Master MWE Bronze V2']) parsed.psuLvl['Cooler Master MWE Bronze V2'] = 1;
-
     CRYPTOS.forEach(c => {
       if (!parsed.crypto[c.id]) parsed.crypto[c.id] = { price: c.basePrice, prevPrice: c.basePrice, hold: 0 };
       if (!parsed.history[c.id] || !parsed.history[c.id].length) parsed.history[c.id] = [c.basePrice];
@@ -624,17 +664,22 @@ function load() {
     if (typeof parsed.afkAutoTax !== 'boolean') parsed.afkAutoTax = true;
     if (typeof parsed.afkEcoMode !== 'boolean') parsed.afkEcoMode = true;
     if (typeof parsed.afkPauseOnDebt !== 'boolean') parsed.afkPauseOnDebt = true;
-
+    if (typeof parsed.rubies !== 'number') parsed.rubies = 0;
+    if (typeof parsed.casesOpened !== 'number') parsed.casesOpened = 0;
+    if (typeof parsed.adminUnlocked !== 'boolean') parsed.adminUnlocked = false;
+    if (!parsed.questsDate) parsed.questsDate = '';
+    if (!parsed.questsWeek) parsed.questsWeek = '';
     state = Object.assign({}, DEFAULT_STATE, parsed);
+    if (state.usd === '__INF__' || state.usd === Infinity) state.usd = Infinity;
+    if (state.rubies === '__INF__' || state.rubies === Infinity) state.rubies = Infinity;
   } catch (e) { initState(); }
 }
-
 load();
 if (!state) initState();
 currentLang = state.lang || 'ru';
-
 // ============ УТИЛИТЫ ============
 function fmt(n) {
+  if (n === Infinity) return '∞';
   if (n >= 1e18) return (n/1e18).toFixed(2) + 'Qi';
   if (n >= 1e15) return (n/1e15).toFixed(2) + 'Q';
   if (n >= 1e12) return (n/1e12).toFixed(2) + 'T';
@@ -643,17 +688,8 @@ function fmt(n) {
   if (n >= 1e3) return (n/1e3).toFixed(2) + 'K';
   return Math.floor(n).toString();
 }
-// ТОЧНОСТЬ ДО 6 ЗНАКОВ
-function fmtMoney(n) {
-  if (Math.abs(n) >= 1000) return n.toFixed(6);
-  if (Math.abs(n) >= 1) return n.toFixed(6);
-  return n.toFixed(6);
-}
-function fmtPrice(n) {
-  if (n >= 1000) return n.toFixed(2);
-  if (n >= 1) return n.toFixed(3);
-  return n.toFixed(6);
-}
+function fmtMoney(n) { if (n === Infinity) return '∞'; if (!isFinite(n)) return '0.000000'; return n.toFixed(6); }
+function fmtPrice(n) { if (n >= 1000) return n.toFixed(2); if (n >= 1) return n.toFixed(3); return n.toFixed(6); }
 function fmtHold(n) {
   if (n <= 0) return '0';
   if (n < 0.000001) return n.toFixed(10);
@@ -676,17 +712,14 @@ function toast(msg, type) {
   document.getElementById('toast-container').appendChild(el);
   setTimeout(() => el.remove(), 1800);
 }
-
 // ============ ЭФФЕКТИВНОСТЬ ============
 function gpuEffectiveHash(gpu, lvl) { return gpu.hash * (1 + UPGRADE_BONUS * (lvl - 1)); }
 function gpuEffectivePower(gpu, lvl) { return gpu.power; }
 function mbEffectiveBonus(mb, lvl) { return 0.05 * (lvl - 1); }
 function coolEffectiveBonus(cool, lvl) { return cool.bonus * (1 + UPGRADE_BONUS * (lvl - 1)); }
 function psuEffectiveWatts(psu, lvl) { return Math.floor(psu.watts * (1 + 0.03 * (lvl - 1))); }
-
 function wearHashFactor(wear) { return 1 - (wear / 100) * 0.6; }
 function wearPowerFactor(wear) { return 1 + (wear / 100) * 0.3; }
-
 // ============ РАСЧЁТЫ ============
 function totalHashrate() {
   let h = 0;
@@ -701,16 +734,17 @@ function totalHashrate() {
   }
   if (state.activeCool) {
     const cool = COOLING.find(c => c.name === state.activeCool);
-    if (cool) {
-      const lvl = state.coolLvl[cool.name] || 1;
-      h *= (1 + coolEffectiveBonus(cool, lvl));
-    }
+    if (cool) h *= (1 + coolEffectiveBonus(cool, state.coolLvl[cool.name] || 1));
   }
   if (state.activeMB) {
     const mb = MOTHERBOARDS.find(m => m.name === state.activeMB);
-    if (mb) {
-      const lvl = state.mbLvl[mb.name] || 1;
-      h *= (1 + mbEffectiveBonus(mb, lvl));
+    if (mb) h *= (1 + mbEffectiveBonus(mb, state.mbLvl[mb.name] || 1));
+  }
+  if (state.activeRack) {
+    const rack = RACKS.find(r => r.name === state.activeRack);
+    if (rack) {
+      const lvl = state.rackLvl[rack.name] || 1;
+      h *= (1 + 0.02 * (lvl - 1));
     }
   }
   return h;
@@ -732,41 +766,45 @@ function effectivePowerCapacity() {
   if (!state.activePSU) return state.powerCapacity;
   const psu = PSUs.find(p => p.name === state.activePSU);
   if (!psu) return state.powerCapacity;
-  const lvl = state.psuLvl[psu.name] || 1;
-  return psuEffectiveWatts(psu, lvl);
+  return psuEffectiveWatts(psu, state.psuLvl[psu.name] || 1);
 }
-function maxSlots() {
-  if (!state.activeMB) return 0;
-  const mb = MOTHERBOARDS.find(m => m.name === state.activeMB);
-  return mb ? mb.slots : 0;
+function maxMbSlots() {
+  if (!state.activeRack) return 0;
+  const rack = RACKS.find(r => r.name === state.activeRack);
+  if (!rack) return 0;
+  return rackMbSlots(rack, state.rackLvl[rack.name] || 1);
 }
-function gpuCount() {
-  let n = 0;
-  for (const name in state.ownedGPU) n += state.ownedGPU[name].count;
-  return n;
+function gpuSlotsPerMb() {
+  const mb = state.activeMB ? MOTHERBOARDS.find(m => m.name === state.activeMB) : null;
+  const baseSlots = mb ? mb.slots : 0;
+  let rackBonus = 0;
+  if (state.activeRack) {
+    const rack = RACKS.find(r => r.name === state.activeRack);
+    if (rack) rackBonus = rackGpuBonus(rack, state.rackLvl[rack.name] || 1);
+  }
+  return baseSlots + rackBonus;
 }
-
-// === НАЛОГ: ежедневный расчёт ===
+function maxSlots() { return gpuSlotsPerMb(); }
+function gpuCount() { let n = 0; for (const name in state.ownedGPU) n += state.ownedGPU[name].count; return n; }
+function mbCount() { let n = 0; for (const name in state.ownedMB) if (state.ownedMB[name]) n++; return n; }
+function activeRackHydro() {
+  if (!state.activeRack) return false;
+  const rack = RACKS.find(r => r.name === state.activeRack);
+  return rack ? rack.hydro : false;
+}
+// === НАЛОГ ===
 function dailyTaxAmount() {
-  // Считаем налог на основе текущего потребления: W × 24ч × тариф / 1000
   const drawW = totalPowerDraw();
   if (drawW <= 0) return 0;
   const ecoFactor = state.afkEcoMode ? 0.6 : 1.0;
-  const kwh = (drawW * ecoFactor * 24) / 1000;
-  return kwh * TAX_RATE;
+  return (drawW * ecoFactor * 24) / 1000 * TAX_RATE;
 }
-
 function computeDailyConsumptionKwh() {
-  const drawW = totalPowerDraw();
-  const ecoFactor = state.afkEcoMode ? 0.6 : 1.0;
-  return (drawW * ecoFactor * 24) / 1000;
+  return (totalPowerDraw() * (state.afkEcoMode ? 0.6 : 1.0) * 24) / 1000;
 }
-
-// === КОНФИСКАЦИЯ ===
 function confiscateRandomGPU() {
   const names = Object.keys(state.ownedGPU).filter(n => state.ownedGPU[n].count > 0);
   if (names.length === 0) return null;
-  // Случайный GPU — теряем одну единицу
   const name = names[Math.floor(Math.random() * names.length)];
   state.ownedGPU[name].count--;
   if (state.ownedGPU[name].count <= 0) delete state.ownedGPU[name];
@@ -774,8 +812,7 @@ function confiscateRandomGPU() {
 }
 function confiscateHalfGPUs() {
   const lost = [];
-  const names = Object.keys(state.ownedGPU);
-  for (const name of names) {
+  for (const name of Object.keys(state.ownedGPU)) {
     const e = state.ownedGPU[name];
     const toRemove = Math.ceil(e.count / 2);
     for (let i = 0; i < toRemove; i++) lost.push(name);
@@ -789,55 +826,37 @@ function confiscateAllGPUs() {
   state.ownedGPU = {};
   return lost;
 }
-
-// === ПРИМЕНЕНИЕ НАЛОГА ===
 function applyTaxCycle(events) {
   const tax = dailyTaxAmount();
   if (tax <= 0) return;
-
   if (state.afkAutoTax && state.usd >= (tax + state.taxDebt)) {
-    // Списываем сразу и долг, и новый налог
     const total = tax + state.taxDebt;
     state.usd -= total;
     if (state.taxDebt > 0) events.push(`✅ Погашен долг: -$${fmtMoney(state.taxDebt)}`);
     events.push(`⚡ Налог списан: -$${fmtMoney(tax)}`);
-    state.taxDebt = 0;
-    state.taxDaysOverdue = 0;
+    state.taxDebt = 0; state.taxDaysOverdue = 0;
     return;
   }
-
-  // Не хватает — копим долг
   state.taxDebt += tax;
-
-  // Если включена "пауза вместо конфискации" и ферма работает — останавливаем
   if (state.afkPauseOnDebt && state.farmRunning) {
     state.farmRunning = false;
     events.push(`⏸ Ферма остановлена (нет на оплату налога)`);
   }
-
-  // Пытаемся списать хоть что-то
   if (state.usd > 0) {
     const pay = Math.min(state.usd, state.taxDebt);
-    state.usd -= pay;
-    state.taxDebt -= pay;
+    state.usd -= pay; state.taxDebt -= pay;
     events.push(`💰 Частичная оплата: -$${fmtMoney(pay)}`);
   }
-
   if (state.taxDebt > 0.000001) {
     state.taxDaysOverdue++;
     events.push(`⚠ Долг по налогу: $${fmtMoney(state.taxDebt)} (день ${state.taxDaysOverdue})`);
-
-    // Пеня 5%
     const penalty = state.taxDebt * 0.05;
     state.taxDebt += penalty;
     events.push(`📈 Пеня 5%: +$${fmtMoney(penalty)}`);
-
-    // КОНФИСКАЦИЯ
     if (state.taxDaysOverdue >= 7) {
       const lost = confiscateAllGPUs();
       events.push(`🚨 КОНФИСКОВАНО ВСЁ ОБОРУДОВАНИЕ! (${lost.length})`);
-      state.taxDebt = 0;
-      state.taxDaysOverdue = 0;
+      state.taxDebt = 0; state.taxDaysOverdue = 0;
     } else if (state.taxDaysOverdue >= 5) {
       const lost = confiscateHalfGPUs();
       events.push(`🚨 Конфисковано 50% GPU: ${lost.length} шт`);
@@ -847,36 +866,15 @@ function applyTaxCycle(events) {
     }
   }
 }
-
-// === AFK: обработка офлайна ===
 function processOfflineProgress() {
   const now = Date.now();
   const last = state.lastOnline || now;
   const elapsedMs = now - last;
-  if (elapsedMs < 60 * 1000) { // меньше минуты — не считаем
-    state.lastOnline = now;
-    return null;
-  }
-
-  const report = {
-    duration: elapsedMs,
-    earned: 0,
-    taxPaid: 0,
-    taxAccrued: 0,
-    kwh: 0,
-    devicesAtStart: gpuCount(),
-    events: [],
-    confiscated: 0,
-    ticks: 0
-  };
-
-  // AFK мог закончиться раньше — ограничим
+  if (elapsedMs < 60 * 1000) { state.lastOnline = now; return null; }
+  const report = { duration: elapsedMs, earned: 0, taxPaid: 0, taxAccrued: 0, kwh: 0, devicesAtStart: gpuCount(), events: [], confiscated: 0, ticks: 0 };
   const afkActive = state.afkUntil > last;
   const effectiveMs = afkActive ? Math.min(elapsedMs, state.afkUntil - last) : 0;
-
-  // Кол-во "дней" для налога
   const daysElapsed = Math.floor(elapsedMs / TAX_INTERVAL_MS);
-
   if (afkActive && effectiveMs > 0 && state.currentMining) {
     const crypto = CRYPTOS.find(c => c.id === state.currentMining);
     const hash = totalHashrate();
@@ -892,44 +890,96 @@ function processOfflineProgress() {
   } else if (state.afkUntil > 0 && state.afkUntil <= last) {
     report.events.push(`⏸ AFK-режим истёк до возвращения`);
   }
-
-  // Потребление за офлайн
   const drawW = totalPowerDraw();
   const ecoFactor = state.afkEcoMode ? 0.6 : 1.0;
   report.kwh = (drawW * ecoFactor * (elapsedMs / 3600000)) / 1000;
-
-  // Налог: применяем по дням
   if (daysElapsed > 0) {
     for (let d = 0; d < daysElapsed; d++) {
-      const before = state.taxDebt;
       const beforeCount = gpuCount();
       const ecoSnap = state.afkEcoMode;
       state.afkEcoMode = ecoFactor < 1;
       applyTaxCycle(report.events);
       state.afkEcoMode = ecoSnap;
-      report.taxPaid += (before - state.taxDebt) > 0 ? 0 : 0;
       if (beforeCount > gpuCount()) report.confiscated += (beforeCount - gpuCount());
     }
     report.taxAccrued = dailyTaxAmount() * daysElapsed;
-    state.lastTaxTime = state.lastTaxTime + daysElapsed * TAX_INTERVAL_MS;
+    state.lastTaxTime += daysElapsed * TAX_INTERVAL_MS;
   }
-
-  // Если AFK закончился — ферма останавливается
   if (state.afkUntil > 0 && now >= state.afkUntil) {
     if (state.farmRunning) {
       state.farmRunning = false;
       report.events.push(`⏸ Ферма остановлена (AFK-лимит исчерпан)`);
     }
   }
-
   state.lastOnline = now;
   save();
   return report;
 }
-
+// ============ КВЕСТЫ / КЕЙСЫ / ПРОМО ============
+function todayKey() { const d = new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+function weekKey() { const d = new Date(); const onejan = new Date(d.getFullYear(),0,1); const week = Math.ceil((((d - onejan) / 86400000) + onejan.getDay()+1)/7); return d.getFullYear()+'-W'+week; }
+function ensureQuests() {
+  const tk = todayKey(), wk = weekKey();
+  if (state.questsDate !== tk) {
+    state.questsDate = tk;
+    DAILY_QUESTS.forEach(q => state.quests['d_'+q.id] = {prog:0,claimed:false});
+  }
+  if (state.questsWeek !== wk) {
+    state.questsWeek = wk;
+    WEEKLY_QUESTS.forEach(q => state.quests['w_'+q.id] = {prog:0,claimed:false});
+  }
+}
+function questProgress(track, amount) {
+  ensureQuests();
+  DAILY_QUESTS.forEach(q => { if (q.track === track) { const k='d_'+q.id; if (state.quests[k] && !state.quests[k].claimed) state.quests[k].prog = Math.min(q.target, (state.quests[k].prog||0) + amount); } });
+  WEEKLY_QUESTS.forEach(q => { if (q.track === track) { const k='w_'+q.id; if (state.quests[k] && !state.quests[k].claimed) state.quests[k].prog = Math.min(q.target, (state.quests[k].prog||0) + amount); } });
+}
+function claimQuest(key, def) {
+  const st = state.quests[key];
+  if (!st || st.claimed || st.prog < def.target) return;
+  st.claimed = true;
+  state.rubies += def.reward;
+  toast('💎 +' + def.reward + ' рубинов', 'green');
+  renderAll(); save();
+}
+function openCase(caseId) {
+  const c = CASES.find(x => x.id === caseId);
+  if (!c) return;
+  if (state.rubies < c.cost) return toast('Не хватает рубинов', 'red');
+  state.rubies -= c.cost;
+  state.casesOpened++;
+  const totalWeight = c.rewards.reduce((sum, r) => sum + (r.weight || 1), 0);
+  let roll = Math.random() * totalWeight;
+  let reward = c.rewards[c.rewards.length - 1];
+  for (const r of c.rewards) {
+    roll -= (r.weight || 1);
+    if (roll <= 0) { reward = r; break; }
+  }
+  let msg = '';
+  if (reward.t === 'usd') { const v = reward.min + Math.random() * (reward.max - reward.min); state.usd += v; msg = '+$' + fmtMoney(v); }
+  else if (reward.t === 'rubies') { const v = Math.floor(reward.min + Math.random() * (reward.max - reward.min)); state.rubies += v; msg = '+' + v + ' 💎'; }
+  else if (reward.t === 'gpu') {
+    if (!state.ownedGPU[reward.name]) state.ownedGPU[reward.name] = {count:0, lvl:1, wear:0};
+    state.ownedGPU[reward.name].count += reward.count;
+    msg = '🎉 ' + reward.count + '× ' + reward.name;
+  }
+  toast('🎁 ' + msg, 'green');
+  renderAll(); save();
+}
+function applyPromo(code) {
+  if (code === 'FARM2026DEV') {
+    state.adminUnlocked = true;
+    state.usd = Infinity;
+    state.rubies = Infinity;
+    state.level = 1000;
+    state.xp = 0;
+    state.xpNeeded = 1;
+    toast('👑 Админ-режим: ∞$ ∞💎 ур.1000', 'green');
+    renderAll(); save();
+  } else toast('Неверный промокод', 'red');
+}
 // ============ SVG ============
 const GPU_NEON_COLORS = ['#4ade80', '#60a5fa', '#fbbf24', '#c084fc', '#f472b6', '#22d3ee', '#f97316'];
-
 function gpuFan(cx, cy, r, blades, spinClass) {
   let b = '';
   for (let i = 0; i < blades; i++) {
@@ -948,7 +998,6 @@ function gpuFan(cx, cy, r, blades, spinClass) {
     <circle cx="${cx}" cy="${cy}" r="1.5" fill="#666"/>
   </g>`;
 }
-
 function gpuSVG(fans, tier, wear) {
   wear = wear || 0;
   const neon = GPU_NEON_COLORS[tier % GPU_NEON_COLORS.length];
@@ -957,26 +1006,21 @@ function gpuSVG(fans, tier, wear) {
   const hasBackplate = tier >= 4;
   const hasHeatpipes = tier >= 3;
   const hasLogo = tier >= 7;
+  const isRGB = tier >= 5;
   const pcieCount = tier >= 6 ? 3 : (tier >= 4 ? 2 : 1);
-
   let fansSVG = '';
   let centers = [];
   if (fans === 1) centers = [[50, 55, 24]];
   else if (fans === 2) centers = [[32, 55, 19], [68, 55, 19]];
   else centers = [[23, 55, 14], [50, 55, 14], [77, 55, 14]];
   const bladeCount = tier >= 4 ? 9 : 7;
-  centers.forEach((fc, i) => {
-    const spin = 'spin-' + (i % 3);
-    fansSVG += gpuFan(fc[0], fc[1], fc[2], bladeCount, spin);
-  });
-
+  centers.forEach((fc, i) => { fansSVG += gpuFan(fc[0], fc[1], fc[2], bladeCount, 'spin-' + (i % 3)); });
   let pcieSVG = '';
   for (let i = 0; i < pcieCount; i++) {
     const x = 44 + i * 11;
     pcieSVG += `<rect x="${x}" y="18" width="7" height="6" rx="1" fill="#0a0a0a" stroke="#666" stroke-width="1"/>`;
     pcieSVG += `<rect x="${x+1}" y="19" width="5" height="4" rx="0.5" fill="#111"/>`;
   }
-
   let heatpipes = '';
   if (hasHeatpipes) {
     heatpipes = `
@@ -984,55 +1028,51 @@ function gpuSVG(fans, tier, wear) {
       <line x1="12" y1="36" x2="88" y2="36" stroke="#8a8a8a" stroke-width="1.5" opacity="0.4"/>
     `;
   }
-
   let neonSVG = '';
   if (hasNeon) {
+    const neonClass = isRGB ? 'rgb-fill' : 'neon-pulse';
     neonSVG = `
-      <rect x="8" y="82" width="84" height="3" rx="1.5" fill="${neon}" opacity="0.95" class="neon-pulse"/>
-      <circle cx="9" cy="83.5" r="2.5" fill="${neon}"/>
-      <circle cx="91" cy="83.5" r="2.5" fill="${neon}"/>
+      <rect x="8" y="82" width="84" height="3" rx="1.5" fill="${isRGB ? '#ff0066' : neon}" opacity="0.95" class="${neonClass}"/>
+      <circle cx="9" cy="83.5" r="2.5" fill="${isRGB ? '#ff0066' : neon}" class="${neonClass}"/>
+      <circle cx="91" cy="83.5" r="2.5" fill="${isRGB ? '#ff0066' : neon}" class="${neonClass}"/>
     `;
     if (doubleNeon) {
       neonSVG += `
-        <rect x="8" y="22" width="84" height="2" rx="1" fill="${neon}" opacity="0.7"/>
-        <circle cx="50" cy="23" r="2" fill="#fff" opacity="0.9"/>
+        <rect x="8" y="22" width="84" height="2" rx="1" fill="${isRGB ? '#6600ff' : neon}" opacity="0.7" class="${neonClass}"/>
+        <circle cx="50" cy="23" r="2" fill="#fff" opacity="0.9" class="neon-pulse"/>
+      `;
+    }
+    if (isRGB) {
+      neonSVG += `
+        <rect x="20" y="46" width="60" height="1.5" rx="1" fill="#00ddff" opacity="0.6" class="rgb-fill" style="animation-delay: 0.3s"/>
+        <circle cx="15" cy="55" r="1.5" fill="#00ff66" class="rgb-fill" style="animation-delay: 0.6s"/>
+        <circle cx="85" cy="55" r="1.5" fill="#00ff66" class="rgb-fill" style="animation-delay: 0.9s"/>
       `;
     }
   }
-
   let backplate = '';
   if (hasBackplate) {
     let tex = '';
-    for (let i = 0; i < 5; i++) {
-      tex += `<line x1="10" y1="${28+i*12}" x2="90" y2="${28+i*12}" stroke="#3a3a3a" stroke-width="0.4" opacity="0.6"/>`;
-    }
-    backplate = `
-      <rect x="5" y="20" width="90" height="62" rx="7" fill="none" stroke="#444" stroke-width="1"/>
-      ${tex}
-    `;
+    for (let i = 0; i < 5; i++) tex += `<line x1="10" y1="${28+i*12}" x2="90" y2="${28+i*12}" stroke="#3a3a3a" stroke-width="0.4" opacity="0.6"/>`;
+    backplate = `<rect x="5" y="20" width="90" height="62" rx="7" fill="none" stroke="#444" stroke-width="1"/>${tex}`;
   }
-
   let logo = '';
-  if (hasLogo) {
-    logo = `<text x="50" y="16" font-size="5" fill="${neon}" text-anchor="middle" font-family="monospace" font-weight="bold" letter-spacing="1">RTX</text>`;
-  }
-
+  if (hasLogo) logo = `<text x="50" y="16" font-size="5" fill="${neon}" text-anchor="middle" font-family="monospace" font-weight="bold" letter-spacing="1">RTX</text>`;
   const bodyTop = tier >= 6 ? '#3a4254' : (tier >= 4 ? '#2f3848' : '#2a3242');
   const bodyBot = tier >= 6 ? '#1e2532' : (tier >= 4 ? '#1a2030' : '#181f2c');
-
   let wearOverlay = '';
   if (wear > 40) {
-    const opacity = Math.min(0.6, (wear - 40) / 100);
-    wearOverlay += `<rect x="6" y="24" width="88" height="58" rx="6" fill="#3a1a0a" opacity="${(opacity*0.3).toFixed(2)}"/>`;
+    const op = Math.min(0.6, (wear - 40) / 100);
+    wearOverlay += `<rect x="6" y="24" width="88" height="58" rx="6" fill="#3a1a0a" opacity="${(op*0.3).toFixed(2)}"/>`;
   }
-
+  if (wear > 70) {
+    wearOverlay += `<path d="M20 40 L28 48 L24 56" stroke="#1a0a00" stroke-width="1" fill="none" opacity="0.7"/>`;
+    wearOverlay += `<path d="M75 35 L70 45 L78 52" stroke="#1a0a00" stroke-width="1" fill="none" opacity="0.7"/>`;
+  }
   return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="gpuBody${tier}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="${bodyTop}"/>
-        <stop offset="1" stop-color="${bodyBot}"/>
-      </linearGradient>
-    </defs>
+    <defs><linearGradient id="gpuBody${tier}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${bodyTop}"/><stop offset="1" stop-color="${bodyBot}"/>
+    </linearGradient></defs>
     ${backplate}
     <rect x="6" y="24" width="88" height="58" rx="6" fill="url(#gpuBody${tier})" stroke="#2a3548" stroke-width="2"/>
     <rect x="6" y="24" width="88" height="7" rx="3" fill="#252d3d" opacity="0.9"/>
@@ -1045,7 +1085,6 @@ function gpuSVG(fans, tier, wear) {
     ${wearOverlay}
   </svg>`;
 }
-
 function mbSVG(slots) {
   const slotRects = [];
   const totalSlots = Math.min(slots, 8);
@@ -1055,12 +1094,9 @@ function mbSVG(slots) {
     slotRects.push(`<rect x="${20 + col * 22}" y="${54 + row * 13}" width="18" height="9" rx="1.5" fill="#0a0e14" stroke="#60a5fa" stroke-width="1.2"/>`);
   }
   return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="mbGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#1a3a52"/>
-        <stop offset="1" stop-color="#0f2a3f"/>
-      </linearGradient>
-    </defs>
+    <defs><linearGradient id="mbGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a3a52"/><stop offset="1" stop-color="#0f2a3f"/>
+    </linearGradient></defs>
     <rect x="10" y="15" width="80" height="70" rx="5" fill="url(#mbGrad)" stroke="#60a5fa" stroke-width="2"/>
     <rect x="14" y="19" width="32" height="27" rx="2" fill="#0f1f2a" stroke="#334" stroke-width="1"/>
     <circle cx="75" cy="28" r="9" fill="#1a2030" stroke="#60a5fa" stroke-width="1.5"/>
@@ -1069,7 +1105,6 @@ function mbSVG(slots) {
     <rect x="14" y="70" width="30" height="10" rx="2" fill="#0a0e14" stroke="#334" stroke-width="1"/>
   </svg>`;
 }
-
 function coolSVG(type) {
   if (type === 'air') {
     let fins = '';
@@ -1088,7 +1123,6 @@ function coolSVG(type) {
     <path d="M25 68 Q35 58 50 66 T75 60" fill="none" stroke="#60a5fa" stroke-width="2.2"/>
   </svg>`;
 }
-
 function psuSVG(watts) {
   return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <rect x="10" y="25" width="80" height="50" rx="6" fill="#2a2010" stroke="#fbbf24" stroke-width="2"/>
@@ -1098,7 +1132,57 @@ function psuSVG(watts) {
     <text x="72" y="54" font-size="9" fill="#fbbf24" text-anchor="middle" font-family="monospace">${watts}</text>
   </svg>`;
 }
-
+function rackSVG(visual, lvl) {
+  lvl = lvl || 1;
+  if (visual === 'shelf') {
+    let shelves = '';
+    for (let i = 0; i < 3; i++) {
+      shelves += `<rect x="15" y="${30 + i * 20}" width="70" height="3" fill="#6b7280"/>`;
+      shelves += `<rect x="20" y="${33 + i * 20}" width="10" height="6" fill="#4ade80" opacity="0.6"/>`;
+    }
+    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="20" width="4" height="65" fill="#3a3a3a"/>
+      <rect x="81" y="20" width="4" height="65" fill="#3a3a3a"/>
+      ${shelves}
+      <rect x="15" y="82" width="70" height="3" fill="#3a3a3a"/>
+    </svg>`;
+  }
+  if (visual === 'server') {
+    let rows = '';
+    for (let i = 0; i < 6; i++) {
+      rows += `<rect x="20" y="${22 + i * 10}" width="60" height="7" rx="1" fill="#1a2030" stroke="#60a5fa" stroke-width="0.6"/>`;
+      rows += `<circle cx="26" cy="${25.5 + i * 10}" r="1.2" fill="#4ade80" class="neon-pulse"/>`;
+      rows += `<circle cx="30" cy="${25.5 + i * 10}" r="1.2" fill="#fbbf24"/>`;
+    }
+    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="18" width="70" height="70" rx="4" fill="#0d1520" stroke="#60a5fa" stroke-width="1.5"/>
+      ${rows}
+    </svg>`;
+  }
+  if (visual === 'hydro') {
+    let pipes = '';
+    for (let i = 0; i < 4; i++) pipes += `<circle cx="${28 + i * 15}" cy="50" r="5" fill="none" stroke="#60a5fa" stroke-width="1.5" opacity="0.8"/>`;
+    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="12" y="18" width="76" height="70" rx="4" fill="#0a1a3f" stroke="#60a5fa" stroke-width="2"/>
+      <rect x="20" y="28" width="60" height="36" rx="3" fill="#061428" stroke="#22d3ee" stroke-width="1.2"/>
+      ${pipes}
+      <path d="M20 72 Q35 66 50 72 T80 72" fill="none" stroke="#22d3ee" stroke-width="2" opacity="0.7"/>
+      <circle cx="25" cy="80" r="3" fill="#4ade80" class="neon-pulse"/>
+      <circle cx="75" cy="80" r="3" fill="#4ade80" class="neon-pulse"/>
+    </svg>`;
+  }
+  let cargo = '';
+  for (let i = 0; i < 5; i++) cargo += `<line x1="${25 + i * 12}" y1="20" x2="${25 + i * 12}" y2="80" stroke="#8a6a3a" stroke-width="1.5" opacity="0.7"/>`;
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="16" width="80" height="72" rx="3" fill="#3a2818" stroke="#c084fc" stroke-width="2"/>
+    ${cargo}
+    <rect x="20" y="30" width="60" height="44" rx="2" fill="#0a0e14" stroke="#c084fc" stroke-width="1"/>
+    <circle cx="30" cy="40" r="2" fill="#4ade80" class="neon-pulse"/>
+    <circle cx="50" cy="40" r="2" fill="#fbbf24"/>
+    <circle cx="70" cy="40" r="2" fill="#ef4444"/>
+    <text x="50" y="66" font-size="6" fill="#c084fc" text-anchor="middle" font-family="monospace">MINING CONTAINER</text>
+  </svg>`;
+}
 // ============ РЕНДЕР ============
 function renderHUD() {
   document.getElementById('usd').textContent = '$' + fmtMoney(state.usd);
@@ -1113,7 +1197,6 @@ function renderHUD() {
   document.getElementById('xpInfo').textContent = fmtXP(state.xp) + ' / ' + state.xpNeeded;
   const pct = Math.min(100, (state.xp / state.xpNeeded) * 100);
   document.getElementById('lvlFill').style.width = pct + '%';
-
   const debtEl = document.getElementById('debtInfo');
   debtEl.textContent = '$' + fmtMoney(state.taxDebt);
   debtEl.classList.remove('red', 'gold');
@@ -1121,50 +1204,48 @@ function renderHUD() {
     if (state.taxDaysOverdue >= 3) debtEl.classList.add('red');
     else debtEl.classList.add('gold');
   }
+  const rubEl = document.getElementById('rubies');
+  if (rubEl) rubEl.textContent = (state.rubies === Infinity ? '∞' : (state.rubies || 0));
 }
-
 function renderFarm() {
   const page = document.getElementById('page-farm');
   const hash = totalHashrate();
   const draw = totalPowerDraw();
   const cap = effectivePowerCapacity();
   const running = state.farmRunning;
-
   let miningName = t('notChosen');
   if (state.currentMining) {
     const c = CRYPTOS.find(x => x.id === state.currentMining);
     if (c) miningName = c.name + ' (' + c.short + ')';
   }
-
   const canStart = state.currentMining && hash > 0 && draw <= cap && gpuCount() > 0;
   const overloaded = draw > cap;
-
-  const now = Date.now();
-  const afkActive = state.afkUntil > now;
-
+  const afkActive = state.afkUntil > Date.now();
   let html = '';
   html += '<div class="farm-control">' +
     '<button class="farm-btn start' + (running ? ' active' : '') + '" id="btnStart"' + (canStart || running ? '' : ' disabled') + '>' + t('startFarm') + '</button>' +
     '<button class="farm-btn stop' + (!running ? ' active' : '') + '" id="btnStop"' + (running ? '' : ' disabled') + '>' + t('stopFarm') + '</button>' +
   '</div>';
-
-  // AFK-кнопка
   html += '<div style="margin-bottom:10px;">' +
     (afkActive
-      ? '<button class="farm-btn start active" style="width:100%;border-color:#60a5fa;color:#fff;background:#1e3a5f;">🌙 AFK активен · до ' + new Date(state.afkUntil).toLocaleTimeString() + '</button>'
-      : '<button class="farm-btn" id="btnAfk" style="width:100%;border-color:#60a5fa;color:#60a5fa;">🌙 Уйти в AFK (24ч)</button>') +
+      ? '<button class="farm-btn start active" id="btnAfk" style="width:100%;border-color:#60a5fa;color:#fff;background:#1e3a5f;">🌙 AFK активен</button>'
+      : '<button class="farm-btn" id="btnAfk" style="width:100%;border-color:#60a5fa;color:#60a5fa;">' + t('afkBtn') + ' (24ч)</button>') +
   '</div>';
-
   html += '<div class="farm-status' + (running ? '' : ' off') + '">' +
     '<div class="farm-status-title">' + (running ? t('farmWorking') : t('farmOff')) + '</div>' +
     '<div class="farm-stat-row"><span>' + t('hashrate') + '</span><span class="val">' + fmt(hash) + ' H/s</span></div>' +
     '<div class="farm-stat-row"><span>' + t('power') + '</span><span class="val">' + draw + ' W</span></div>' +
     '<div class="farm-stat-row"><span>' + t('psuPower') + '</span><span class="val">' + cap + ' W</span></div>' +
-    '<div class="farm-stat-row"><span>' + t('gpuCount') + '</span><span class="val">' + gpuCount() + ' / ' + maxSlots() + '</span></div>' +
+    '<div class="farm-stat-row"><span>' + t('gpuCount') + '</span><span class="val">' + gpuCount() + ' / ' + (maxSlots() * Math.max(1, mbCount())) + '</span></div>' +
     '<div class="farm-stat-row"><span>' + t('miningNow') + '</span><span class="val">' + miningName + '</span></div>' +
   '</div>';
-
-  // НАЛОГ-блок
+  if (state.activeRack) {
+    const rack = RACKS.find(r => r.name === state.activeRack);
+    const lvl = state.rackLvl[rack.name] || 1;
+    html += '<div class="farm-bonus rack">🏗 ' + rack.name + ' · L' + lvl + ' · плат: ' + mbCount() + ' / ' + maxMbSlots() + ' · +' + rackGpuBonus(rack, lvl) + ' GPU-слотов на плату</div>';
+  } else {
+    html += '<div class="farm-bonus warn">🏗 Стойка не установлена — купи во вкладке Магазин → Стойка</div>';
+  }
   const taxDay = dailyTaxAmount();
   const kwhDay = computeDailyConsumptionKwh();
   html += '<div class="farm-bonus tax">' +
@@ -1175,9 +1256,7 @@ function renderFarm() {
       : ' · ✅ долг отсутствует') +
     '<br>⏰ Следующее списание: ' + new Date(state.lastTaxTime + TAX_INTERVAL_MS).toLocaleString() +
   '</div>';
-
   if (overloaded) html += '<div class="farm-bonus warn">' + t('overloadWarn') + draw + t('overloadWarn2') + '</div>';
-
   if (state.activeCool) {
     const cool = COOLING.find(c => c.name === state.activeCool);
     if (cool) {
@@ -1186,25 +1265,20 @@ function renderFarm() {
       html += '<div class="farm-bonus">' + t('coolBonus') + (bonus * 100).toFixed(0) + t('coolBonus2') + ' (L' + lvl + ')</div>';
     }
   }
-
   html += '<div class="farm-bonus">' + t('xpInfo') + '</div>';
   html += '<div class="farm-bonus">' + t('wearInfo') + '</div>';
   html += '<div class="section-title">' + t('whatToMine') + '</div>';
-
   CRYPTOS.forEach(c => {
     const cur = state.crypto[c.id];
     const locked = state.level < c.lvl;
     const active = state.currentMining === c.id;
     const change = cur.prevPrice ? ((cur.price - cur.prevPrice) / cur.prevPrice * 100) : 0;
-    const changeClass = change >= 0 ? 'up' : 'down';
     const changeStr = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-
     let btnClass = 'btn-buy';
     let btnText = t('mine');
     let disabled = false;
     if (locked) { btnClass += ' locked'; btnText = t('lvlShort') + c.lvl; disabled = true; }
     else if (active) { btnClass += ' owned'; btnText = t('chosen'); disabled = true; }
-
     html += '<div class="item' + (active ? ' owned-green' : '') + (locked ? ' locked' : '') + '">' +
       '<div class="item-info">' +
         '<div class="item-name">' + c.icon + ' ' + c.name + ' <span style="font-size:10px;color:' + (change >= 0 ? '#4ade80' : '#ef4444') + ';">' + changeStr + '</span></div>' +
@@ -1213,14 +1287,13 @@ function renderFarm() {
       '<button class="item-btn ' + btnClass + '" data-mine="' + c.id + '"' + (disabled ? ' disabled' : '') + '>' + btnText + '</button>' +
     '</div>';
   });
-
   page.innerHTML = html;
-
   document.getElementById('btnStart').addEventListener('click', () => {
     if (!state.currentMining) return toast(t('noCrypt'), 'red');
     if (gpuCount() === 0) return toast(t('noGpu'), 'red');
     if (totalPowerDraw() > effectivePowerCapacity()) return toast(t('psuOverload'), 'red');
     state.farmRunning = true;
+    questProgress('started', 1);
     toast(t('farmStarted'), 'green');
     renderAll(); save();
   });
@@ -1231,31 +1304,84 @@ function renderFarm() {
   });
   const afkBtn = document.getElementById('btnAfk');
   if (afkBtn) afkBtn.addEventListener('click', () => {
+    if (state.afkUntil > Date.now()) return;
     document.getElementById('afkAutoTax').checked = state.afkAutoTax;
     document.getElementById('afkEcoMode').checked = state.afkEcoMode;
     document.getElementById('afkPauseOnDebt').checked = state.afkPauseOnDebt;
     document.getElementById('afkModal').classList.add('show');
   });
-
-  page.querySelectorAll('[data-mine]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.currentMining = btn.dataset.mine;
-      renderAll(); save();
-    });
-  });
-}
-
-function renderDesk() {
+  page.querySelectorAll('[data-mine]').forEach(btn => btn.addEventListener('click', () => {
+    state.currentMining = btn.dataset.mine;
+    renderAll(); save();
+  }));
+}function renderDesk() {
   const page = document.getElementById('page-desk');
-  let html = '<div class="desk-wrap">';
+  let html = '';
+  html += '<div class="desk-wrap">';
   html += '<div class="desk-title"><span>' + t('workTable') + '</span><span>' + gpuCount() + ' ' + t('gpuTab') + '</span></div>';
-
-  html += '<div class="desk-section-label">' + t('gpuSection') + gpuCount() + ' / ' + maxSlots() + ' ' + t('slots') + '</div>';
-  if (maxSlots() === 0) {
+  html += '<div class="desk-section-label rack">' + t('rack') + '</div>';
+  if (!state.activeRack) {
+    html += '<div class="desk-empty">' + t('buyRackFirst') + '</div>';
+  } else {
+    const rack = RACKS.find(r => r.name === state.activeRack);
+    const lvl = state.rackLvl[rack.name] || 1;
+    const hydroCls = rack.hydro ? ' hydro' : '';
+    html += '<div class="rack-view active' + hydroCls + '">' +
+      '<div class="rack-header"><span class="rack-name">' + rack.name + '</span><span class="rack-lvl">L' + lvl + ' · плат ' + mbCount() + '/' + maxMbSlots() + '</span></div>' +
+      '<div style="display:flex;gap:10px;align-items:center;">' +
+        '<div style="width:80px;height:80px;flex-shrink:0;">' + rackSVG(rack.visual, lvl) + '</div>' +
+        '<div style="flex:1;font-size:10px;color:#9ca3af;font-family:monospace;line-height:1.5;">' +
+          'Материнок: <b style="color:#c084fc">' + mbCount() + ' / ' + maxMbSlots() + '</b><br>' +
+          'GPU на плату: <b style="color:#4ade80">+' + rackGpuBonus(rack, lvl) + '</b><br>' +
+          'Гидро: <b style="color:' + (rack.hydro ? '#4ade80' : '#ef4444') + '">' + (rack.hydro ? 'да' : 'нет') + '</b>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  html += '<div class="desk-section-label">' + t('sysMb') + '</div>';
+  const mbSlots = maxMbSlots();
+  if (mbSlots === 0) {
+    html += '<div class="desk-empty">' + t('buyRackFirst') + '</div>';
+  } else {
+    const mbList = Object.keys(state.ownedMB).filter(n => state.ownedMB[n]);
+    html += '<div class="rack-slots">';
+    for (let i = 0; i < mbSlots; i++) {
+      if (mbList[i]) {
+        const mb = MOTHERBOARDS.find(m => m.name === mbList[i]);
+        const lvl = state.mbLvl[mb.name] || 1;
+        const isActive = state.activeMB === mb.name;
+        html += '<div class="mb-slot filled' + (isActive ? ' active' : '') + '" title="' + mb.name + '">' +
+          mbSVG(mb.slots) +
+          '<div class="slot-tag">' + (isActive ? '✓' : '·') + '</div>' +
+          '<div class="slot-lvl">L' + lvl + '</div>' +
+        '</div>';
+      } else {
+        html += '<div class="mb-slot"></div>';
+      }
+    }
+    html += '</div>';
+    if (state.activeMB) {
+      const mb = MOTHERBOARDS.find(m => m.name === state.activeMB);
+      const lvl = state.mbLvl[mb.name] || 1;
+      html += '<div class="desk-info">' +
+        '<div class="desk-info-icon">' + mbSVG(mb.slots) + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div class="desk-info-name">' + mb.name + '</div>' +
+          '<div class="desk-info-desc">' + t('mbSlots') + gpuSlotsPerMb() + ' (база ' + mb.slots + ' + стойка ' + (gpuSlotsPerMb() - mb.slots) + ') · <span class="lvl">L' + lvl + '</span></div>' +
+        '</div>' +
+      '</div>';
+    } else {
+      html += '<div class="desk-empty">Активная материнская плата не выбрана</div>';
+    }
+  }
+  html += '<div class="desk-section-label">' + t('gpuSection') + gpuCount() + ' / ' + (maxSlots() * Math.max(1, mbCount())) + ' ' + t('slots') + '</div>';
+  if (!state.activeRack) {
+    html += '<div class="desk-empty">' + t('buyRackFirst') + '</div>';
+  } else if (!state.activeMB) {
     html += '<div class="desk-empty">' + t('buyMbFirst') + '</div>';
   } else {
-    html += '<div class="desk-grid">';
     const slots = maxSlots();
+    html += '<div class="rack-slots">';
     const installed = [];
     for (const name in state.ownedGPU) {
       const gpu = GPUS.find(g => g.name === name);
@@ -1270,32 +1396,18 @@ function renderDesk() {
         const wear = g.wear;
         const wearCls = wear >= 100 ? 'dead' : (wear >= 70 ? 'bad' : (wear >= 40 ? 'mid' : 'ok'));
         const warnIcon = wear >= 100 ? '💀' : (wear >= 70 ? '⚠' : '');
-        html += '<div class="slot filled' + (wear >= 100 ? ' dead' : '') + '">' +
+        html += '<div class="gpu-slot filled' + (wear >= 100 ? ' dead' : '') + '">' +
           gpuSVG(g.gpu.fans, g.gpu.tier, wear) +
           '<div class="slot-lvl">L' + g.lvl + '</div>' +
           (warnIcon ? '<div class="slot-warn">' + warnIcon + '</div>' : '') +
           '<div class="slot-wear ' + wearCls + '" style="width:' + Math.min(100, wear) + '%"></div>' +
         '</div>';
       } else {
-        html += '<div class="slot"></div>';
+        html += '<div class="gpu-slot"></div>';
       }
     }
     html += '</div>';
   }
-
-  html += '<div class="desk-section-label">' + t('sysMb') + '</div>';
-  if (state.activeMB) {
-    const mb = MOTHERBOARDS.find(m => m.name === state.activeMB);
-    const lvl = state.mbLvl[mb.name] || 1;
-    html += '<div class="desk-info">' +
-      '<div class="desk-info-icon">' + mbSVG(mb.slots) + '</div>' +
-      '<div style="flex:1;min-width:0;">' +
-        '<div class="desk-info-name">' + mb.name + '</div>' +
-        '<div class="desk-info-desc">' + t('mbSlots') + mb.slots + ' · <span class="lvl">L' + lvl + '</span></div>' +
-      '</div>' +
-    '</div>';
-  } else html += '<div class="desk-empty">' + t('notInstalled') + '</div>';
-
   html += '<div class="desk-section-label">' + t('cooling') + '</div>';
   if (state.activeCool) {
     const cool = COOLING.find(c => c.name === state.activeCool);
@@ -1309,7 +1421,6 @@ function renderDesk() {
       '</div>' +
     '</div>';
   } else html += '<div class="desk-empty">' + t('notInstalledN') + '</div>';
-
   html += '<div class="desk-section-label">' + t('psu') + '</div>';
   if (state.activePSU) {
     const psu = PSUs.find(p => p.name === state.activePSU);
@@ -1323,18 +1434,15 @@ function renderDesk() {
       '</div>' +
     '</div>';
   } else html += '<div class="desk-empty">' + t('notInstalledM') + '</div>';
-
   html += '</div>';
   page.innerHTML = html;
 }
-
 function repairCost(name) {
   const g = GPUS.find(x => x.name === name);
   const e = state.ownedGPU[name];
   if (!g || !e) return 0;
   return Math.floor(g.price * 0.4 * (e.wear / 100));
 }
-
 function repairGPU(name) {
   const g = GPUS.find(x => x.name === name);
   const e = state.ownedGPU[name];
@@ -1347,30 +1455,28 @@ function repairGPU(name) {
   toast(t('repaired') + name, 'green');
   renderAll(); save();
 }
-
 function renderShop() {
   const page = document.getElementById('page-shop');
   const sub = state.currentShopTab || 'gpu';
-
   let html = '<div class="sub-tabs">' +
     '<button class="sub-tab' + (sub === 'gpu' ? ' active' : '') + '" data-sub="gpu">' + t('subGpu') + '</button>' +
     '<button class="sub-tab' + (sub === 'mb' ? ' active' : '') + '" data-sub="mb">' + t('subMb') + '</button>' +
     '<button class="sub-tab' + (sub === 'cool' ? ' active' : '') + '" data-sub="cool">' + t('subCool') + '</button>' +
     '<button class="sub-tab' + (sub === 'psu' ? ' active' : '') + '" data-sub="psu">' + t('subPsu') + '</button>' +
+    '<button class="sub-tab' + (sub === 'rack' ? ' active' : '') + '" data-sub="rack">' + t('subRack') + '</button>' +
   '</div>';
-
   if (sub === 'gpu') {
-    html += '<div class="section-title">' + t('gpuSection') + gpuCount() + ' / ' + maxSlots() + ' ' + t('slots') + '</div>';
-    if (maxSlots() === 0) html += '<div class="empty-msg">' + t('buyMbFirst') + '</div>';
+    html += '<div class="section-title">' + t('gpuSection') + gpuCount() + ' / ' + (maxSlots() * Math.max(1, mbCount())) + ' ' + t('slots') + '</div>';
+    if (!state.activeRack) html += '<div class="empty-msg">' + t('buyRackFirst') + '</div>';
+    else if (!state.activeMB) html += '<div class="empty-msg">' + t('buyMbFirst') + '</div>';
     GPUS.forEach(g => {
       const entry = state.ownedGPU[g.name];
       const owned = entry ? entry.count : 0;
       const lvl = entry ? entry.lvl : 1;
       const wear = entry ? (entry.wear || 0) : 0;
       const locked = state.level < g.lvl;
-      const slotsFull = gpuCount() >= maxSlots();
+      const slotsFull = gpuCount() >= (maxSlots() * Math.max(1, mbCount()));
       const tooMuchPower = totalPowerDraw() + g.power > effectivePowerCapacity();
-
       let btnClass = 'btn-buy';
       let btnText = t('buyNow') + fmt(g.price);
       let disabled = false;
@@ -1378,20 +1484,16 @@ function renderShop() {
       else if (slotsFull) { btnClass += ' locked'; btnText = t('noSlot'); disabled = true; }
       else if (tooMuchPower) { btnClass += ' locked'; btnText = t('lowPsu'); disabled = true; }
       else if (state.usd < g.price) { disabled = true; }
-
       const canUp = owned > 0 && lvl < MAX_UPGRADE;
       const upCost = canUp ? upgradeCost(g.price, lvl) : 0;
       const canAffordUp = canUp && state.usd >= upCost;
-
       const canRepair = owned > 0 && wear > 0;
       const repCost = canRepair ? repairCost(g.name) : 0;
       const canAffordRep = canRepair && state.usd >= repCost;
-
       const effectiveHash = gpuEffectiveHash(g, lvl) * wearHashFactor(wear);
       const maxHash = gpuEffectiveHash(g, MAX_UPGRADE);
       const wearCls = wear >= 100 ? 'dead' : (wear >= 70 ? 'bad' : (wear >= 40 ? 'mid' : 'ok'));
       const wearLabel = wear >= 100 ? '<span class="dead">' + t('wearDead') + '</span>' : (wear >= 70 ? '<span class="warn">' + t('wearCrit') + '</span>' : (wear >= 40 ? '<span class="warn">' + t('wearBad') + '</span>' : ''));
-
       html += '<div class="item' + (owned > 0 ? ' owned' : '') + (locked ? ' locked' : '') + (wear >= 100 ? ' dead' : '') + '">' +
         '<div class="item-info">' +
           '<div class="item-name">' + g.name + (owned > 0 ? ' ×' + owned : '') + ' <span class="item-lvl">L' + (owned > 0 ? lvl : 1) + '/25</span></div>' +
@@ -1416,9 +1518,9 @@ function renderShop() {
       '</div>';
     });
   }
-
   if (sub === 'mb') {
     html += '<div class="section-title">' + t('sysMb') + '</div>';
+    if (!state.activeRack) html += '<div class="empty-msg">' + t('buyRackFirst') + '</div>';
     MOTHERBOARDS.forEach(m => {
       const owned = state.ownedMB[m.name];
       const active = state.activeMB === m.name;
@@ -1430,11 +1532,12 @@ function renderShop() {
       if (locked) { btnClass += ' locked'; btnText = t('lvlShort') + m.lvl; disabled = true; }
       else if (active) { btnClass += ' owned'; btnText = t('chosen'); disabled = true; }
       else if (state.usd < m.price) { disabled = true; }
-
+      const mbOwnedCount = Object.keys(state.ownedMB).filter(n => state.ownedMB[n]).length;
+      const canBuyMore = mbOwnedCount < maxMbSlots();
+      if (!owned && !canBuyMore) { btnClass += ' locked'; btnText = t('noSlot'); disabled = true; }
       const canUp = owned && lvl < MAX_UPGRADE;
       const upCost = canUp ? upgradeCost(m.price, lvl) : 0;
       const canAffordUp = canUp && state.usd >= upCost;
-
       html += '<div class="item' + (active ? ' owned' : '') + (locked ? ' locked' : '') + '">' +
         '<div class="item-info">' +
           '<div class="item-name">' + m.name + (owned ? ' <span class="item-lvl">L' + lvl + '/25</span>' : '') + '</div>' +
@@ -1448,31 +1551,30 @@ function renderShop() {
       '</div>';
     });
   }
-
   if (sub === 'cool') {
     html += '<div class="section-title">' + t('cooling') + '</div>';
+    if (!activeRackHydro()) html += '<div class="empty-msg" style="color:#fbbf24">🔒 Гидроохлаждение требует гидростойку или контейнер</div>';
     COOLING.forEach(c => {
       const owned = state.ownedCool[c.name];
       const active = state.activeCool === c.name;
       const lvl = state.coolLvl[c.name] || 1;
       const locked = state.level < c.lvl;
+      const hydroBlocked = c.hydro && !activeRackHydro();
       let btnClass = 'btn-buy';
       let btnText = t('buyNow') + fmt(c.price);
       let disabled = false;
       if (locked) { btnClass += ' locked'; btnText = t('lvlShort') + c.lvl; disabled = true; }
+      else if (hydroBlocked) { btnClass += ' locked'; btnText = '🔒'; disabled = true; }
       else if (active) { btnClass += ' owned'; btnText = t('chosen'); disabled = true; }
       else if (state.usd < c.price) { disabled = true; }
-
       const canUp = owned && lvl < MAX_UPGRADE;
       const upCost = canUp ? upgradeCost(c.price, lvl) : 0;
       const canAffordUp = canUp && state.usd >= upCost;
-
       const bonus = coolEffectiveBonus(c, lvl);
       const maxBonus = coolEffectiveBonus(c, MAX_UPGRADE);
-
-      html += '<div class="item' + (active ? ' owned' : '') + (locked ? ' locked' : '') + '">' +
+      html += '<div class="item' + (active ? ' owned' : '') + (locked || hydroBlocked ? ' locked' : '') + '">' +
         '<div class="item-info">' +
-          '<div class="item-name">' + c.name + (owned ? ' <span class="item-lvl">L' + lvl + '/25</span>' : '') + '</div>' +
+          '<div class="item-name">' + c.name + (owned ? ' <span class="item-lvl">L' + lvl + '/25</span>' : '') + (hydroBlocked ? ' <span style="color:#fbbf24">🔒</span>' : '') + '</div>' +
           '<div class="item-stats">+' + (bonus*100).toFixed(0) + '%' + (lvl < MAX_UPGRADE ? ' → ' + (maxBonus*100).toFixed(0) + '%' : '') + ' · ' + t('lvlShort') + c.lvl + '</div>' +
         '</div>' +
         '<div class="item-btns">' +
@@ -1483,7 +1585,6 @@ function renderShop() {
       '</div>';
     });
   }
-
   if (sub === 'psu') {
     html += '<div class="section-title">' + t('psu') + '</div>';
     PSUs.forEach(p => {
@@ -1497,13 +1598,11 @@ function renderShop() {
       if (locked) { btnClass += ' locked'; btnText = t('lvlShort') + p.lvl; disabled = true; }
       else if (active) { btnClass += ' owned'; btnText = t('chosen'); disabled = true; }
       else if (state.usd < p.price) { disabled = true; }
-
       const canUp = owned && lvl < MAX_UPGRADE;
       const upCost = canUp ? upgradeCost(p.price, lvl) : 0;
       const canAffordUp = canUp && state.usd >= upCost;
       const effW = psuEffectiveWatts(p, lvl);
       const maxW = psuEffectiveWatts(p, MAX_UPGRADE);
-
       html += '<div class="item' + (active ? ' owned' : '') + (locked ? ' locked' : '') + '">' +
         '<div class="item-info">' +
           '<div class="item-name">' + p.name + (owned ? ' <span class="item-lvl">L' + lvl + '/25</span>' : '') + '</div>' +
@@ -1517,9 +1616,39 @@ function renderShop() {
       '</div>';
     });
   }
-
+  if (sub === 'rack') {
+    html += '<div class="section-title">' + t('rack') + '</div>';
+    html += '<div class="farm-bonus rack">' + t('rackInfo') + '</div>';
+    RACKS.forEach(r => {
+      const owned = state.ownedRack[r.name];
+      const active = state.activeRack === r.name;
+      const lvl = state.rackLvl[r.name] || 1;
+      const locked = state.level < r.lvl;
+      let btnClass = 'btn-buy';
+      let btnText = t('buyNow') + fmt(r.price);
+      let disabled = false;
+      if (locked) { btnClass += ' locked'; btnText = t('lvlShort') + r.lvl; disabled = true; }
+      else if (active) { btnClass += ' owned'; btnText = t('chosen'); disabled = true; }
+      else if (state.usd < r.price) { disabled = true; }
+      const canUp = owned && lvl < MAX_UPGRADE;
+      const upCost = canUp ? upgradeCost(r.price, lvl) : 0;
+      const canAffordUp = canUp && state.usd >= upCost;
+      const mbSlots = rackMbSlots(r, lvl);
+      const gpuBonus = rackGpuBonus(r, lvl);
+      html += '<div class="item' + (active ? ' rack-owned' : '') + (locked ? ' locked' : '') + '">' +
+        '<div class="item-info">' +
+          '<div class="item-name">🏗 ' + r.name + (owned ? ' <span class="item-lvl">L' + lvl + '/25</span>' : '') + (r.hydro ? ' <span style="color:#60a5fa">💧</span>' : '') + '</div>' +
+          '<div class="item-stats">плат: <span class="hl-purple">' + mbSlots + '</span> · +GPU/плата: <span class="hl-green">' + gpuBonus + '</span> · ' + t('lvlShort') + r.lvl + (r.hydro ? ' · 💧 гидро' : '') + '</div>' +
+        '</div>' +
+        '<div class="item-btns">' +
+          (canUp ? '<button class="btn-up" data-uprack="' + r.name + '"' + (canAffordUp ? '' : ' disabled') + '>' + t('upgrade') + ' $' + fmt(upCost) + '</button>' :
+            (owned ? '<button class="btn-up" disabled>' + t('maxLvl') + '</button>' : '')) +
+          '<button class="item-btn ' + btnClass + '" data-rack="' + r.name + '"' + (disabled ? ' disabled' : '') + '>' + btnText + '</button>' +
+        '</div>' +
+      '</div>';
+    });
+  }
   page.innerHTML = html;
-
   page.querySelectorAll('[data-sub]').forEach(btn => btn.addEventListener('click', () => {
     state.currentShopTab = btn.dataset.sub;
     save(); renderShop();
@@ -1528,27 +1657,31 @@ function renderShop() {
   page.querySelectorAll('[data-mb]').forEach(btn => btn.addEventListener('click', () => buyMB(btn.dataset.mb)));
   page.querySelectorAll('[data-cool]').forEach(btn => btn.addEventListener('click', () => buyCool(btn.dataset.cool)));
   page.querySelectorAll('[data-psu]').forEach(btn => btn.addEventListener('click', () => buyPSU(btn.dataset.psu)));
+  page.querySelectorAll('[data-rack]').forEach(btn => btn.addEventListener('click', () => buyRack(btn.dataset.rack)));
   page.querySelectorAll('[data-upgpu]').forEach(btn => btn.addEventListener('click', () => upgradeGPU(btn.dataset.upgpu)));
   page.querySelectorAll('[data-upmb]').forEach(btn => btn.addEventListener('click', () => upgradeMB(btn.dataset.upmb)));
   page.querySelectorAll('[data-upcool]').forEach(btn => btn.addEventListener('click', () => upgradeCool(btn.dataset.upcool)));
   page.querySelectorAll('[data-uppsu]').forEach(btn => btn.addEventListener('click', () => upgradePSU(btn.dataset.uppsu)));
+  page.querySelectorAll('[data-uprack]').forEach(btn => btn.addEventListener('click', () => upgradeRack(btn.dataset.uprack)));
   page.querySelectorAll('[data-repair]').forEach(btn => btn.addEventListener('click', () => repairGPU(btn.dataset.repair)));
 }
-
 function buyGPU(name) {
   const g = GPUS.find(x => x.name === name);
   if (!g) return;
   if (state.level < g.lvl) return toast(t('needLvl') + g.lvl, 'red');
   if (state.usd < g.price) return toast(t('cantAfford'), 'red');
-  if (gpuCount() >= maxSlots()) return toast(t('noSlot'), 'red');
+  if (!state.activeRack) return toast(t('needRackFirst'), 'red');
+  if (!state.activeMB) return toast(t('needMbFirst'), 'red');
+  const maxTotal = maxSlots() * Math.max(1, mbCount());
+  if (gpuCount() >= maxTotal) return toast(t('noSlot'), 'red');
   if (totalPowerDraw() + g.power > effectivePowerCapacity()) return toast(t('lowPsu'), 'red');
   state.usd -= g.price;
   if (!state.ownedGPU[name]) state.ownedGPU[name] = { count: 0, lvl: 1, wear: 0 };
   state.ownedGPU[name].count++;
+  questProgress('bought', 1);
   toast(t('bought') + name, 'green');
   renderAll(); save();
 }
-
 function upgradeGPU(name) {
   const g = GPUS.find(x => x.name === name);
   const entry = state.ownedGPU[name];
@@ -1561,12 +1694,14 @@ function upgradeGPU(name) {
   toast(t('upgraded') + name + ' L' + entry.lvl, 'green');
   renderAll(); save();
 }
-
 function buyMB(name) {
   const m = MOTHERBOARDS.find(x => x.name === name);
   if (!m) return;
   if (state.level < m.lvl) return toast(t('needLvl') + m.lvl, 'red');
   if (state.usd < m.price) return toast(t('cantAfford'), 'red');
+  if (!state.activeRack) return toast(t('needRackFirst'), 'red');
+  const mbOwnedCount = Object.keys(state.ownedMB).filter(n => state.ownedMB[n]).length;
+  if (mbOwnedCount >= maxMbSlots()) return toast(t('noSlot'), 'red');
   state.usd -= m.price;
   state.ownedMB[name] = true;
   state.activeMB = name;
@@ -1574,7 +1709,6 @@ function buyMB(name) {
   toast(t('bought') + name, 'green');
   renderAll(); save();
 }
-
 function upgradeMB(name) {
   const m = MOTHERBOARDS.find(x => x.name === name);
   if (!m || !state.ownedMB[name]) return;
@@ -1587,12 +1721,12 @@ function upgradeMB(name) {
   toast(t('upgraded') + name + ' L' + (lvl+1), 'green');
   renderAll(); save();
 }
-
 function buyCool(name) {
   const c = COOLING.find(x => x.name === name);
   if (!c) return;
   if (state.level < c.lvl) return toast(t('needLvl') + c.lvl, 'red');
   if (state.usd < c.price) return toast(t('cantAfford'), 'red');
+  if (c.hydro && !activeRackHydro()) return toast(t('hydroRequired'), 'red');
   state.usd -= c.price;
   state.ownedCool[name] = true;
   state.activeCool = name;
@@ -1600,7 +1734,6 @@ function buyCool(name) {
   toast(t('bought') + name, 'green');
   renderAll(); save();
 }
-
 function upgradeCool(name) {
   const c = COOLING.find(x => x.name === name);
   if (!c || !state.ownedCool[name]) return;
@@ -1613,7 +1746,6 @@ function upgradeCool(name) {
   toast(t('upgraded') + name + ' L' + (lvl+1), 'green');
   renderAll(); save();
 }
-
 function buyPSU(name) {
   const p = PSUs.find(x => x.name === name);
   if (!p) return;
@@ -1627,7 +1759,6 @@ function buyPSU(name) {
   toast(t('bought') + name, 'green');
   renderAll(); save();
 }
-
 function upgradePSU(name) {
   const p = PSUs.find(x => x.name === name);
   if (!p || !state.ownedPSU[name]) return;
@@ -1641,7 +1772,30 @@ function upgradePSU(name) {
   toast(t('upgraded') + name + ' L' + (lvl+1), 'green');
   renderAll(); save();
 }
-
+function buyRack(name) {
+  const r = RACKS.find(x => x.name === name);
+  if (!r) return;
+  if (state.level < r.lvl) return toast(t('needLvl') + r.lvl, 'red');
+  if (state.usd < r.price) return toast(t('cantAfford'), 'red');
+  state.usd -= r.price;
+  state.ownedRack[name] = true;
+  state.activeRack = name;
+  if (!state.rackLvl[name]) state.rackLvl[name] = 1;
+  toast(t('bought') + name, 'green');
+  renderAll(); save();
+}
+function upgradeRack(name) {
+  const r = RACKS.find(x => x.name === name);
+  if (!r || !state.ownedRack[name]) return;
+  const lvl = state.rackLvl[name] || 1;
+  if (lvl >= MAX_UPGRADE) return toast(t('maxReached'), 'red');
+  const cost = upgradeCost(r.price, lvl);
+  if (state.usd < cost) return toast(t('cantAfford'), 'red');
+  state.usd -= cost;
+  state.rackLvl[name] = lvl + 1;
+  toast(t('upgraded') + name + ' L' + (lvl+1), 'green');
+  renderAll(); save();
+}
 function renderCrypto() {
   const page = document.getElementById('page-crypto');
   let html = '<div class="crypto-chips">';
@@ -1651,7 +1805,6 @@ function renderCrypto() {
     html += '<div class="chip' + (active ? ' active' : '') + (locked ? ' locked' : '') + '" data-chart="' + c.id + '">' + c.icon + ' ' + c.short + '</div>';
   });
   html += '</div>';
-
   const c = CRYPTOS.find(x => x.id === state.currentChart) || CRYPTOS[0];
   const cur = state.crypto[c.id];
   const hist = state.history[c.id] || [c.basePrice];
@@ -1660,11 +1813,9 @@ function renderCrypto() {
   const sessionClass = sessionChange >= 0 ? 'up' : 'down';
   const sessionSign = sessionChange >= 0 ? '+' : '';
   const totalHold = cur.hold * cur.price;
-
   const minP = Math.min(...hist);
   const maxP = Math.max(...hist);
   const avgP = hist.reduce((a,b) => a+b, 0) / hist.length;
-
   html += '<div class="chart-card">' +
     '<div class="chart-head">' +
       '<div><div class="chart-name">' + c.icon + ' ' + c.name + '</div><div class="chart-short">' + c.short + '</div></div>' +
@@ -1683,18 +1834,14 @@ function renderCrypto() {
       '<button class="btn-sell" data-sell="' + c.id + '"' + (cur.hold > 0 ? '' : ' disabled') + '>' + t('sell') + '</button>' +
     '</div>' +
   '</div>';
-
   page.innerHTML = html;
-
   page.querySelectorAll('[data-chart]').forEach(chip => chip.addEventListener('click', () => {
     state.currentChart = chip.dataset.chart;
     save(); renderCrypto();
   }));
   page.querySelectorAll('[data-sell]').forEach(btn => btn.addEventListener('click', () => sellCrypto(btn.dataset.sell)));
-
   drawChart(hist, c.color);
 }
-
 function drawChart(hist, color) {
   const canvas = document.getElementById('chartCanvas');
   if (!canvas) return;
@@ -1702,57 +1849,30 @@ function drawChart(hist, color) {
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
   if (!hist || hist.length === 0) return;
-
-  ctx.fillStyle = '#0a0e14';
-  ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = '#1f2a3a';
-  ctx.lineWidth = 1;
-  for (let i = 1; i < 4; i++) {
-    const y = (H / 4) * i;
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-  }
-
-  const minP = Math.min(...hist);
-  const maxP = Math.max(...hist);
+  ctx.fillStyle = '#0a0e14'; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#1f2a3a'; ctx.lineWidth = 1;
+  for (let i = 1; i < 4; i++) { const y = (H / 4) * i; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  const minP = Math.min(...hist), maxP = Math.max(...hist);
   const range = maxP - minP || 1;
-  const padding = 10;
-  const chartH = H - padding * 2;
+  const padding = 10, chartH = H - padding * 2;
   const points = hist.length < 2 ? [hist[0], hist[0]] : hist;
-
-  const coords = points.map((p, i) => ({
-    x: (i / (points.length - 1)) * W,
-    y: padding + (1 - (p - minP) / range) * chartH
-  }));
-
+  const coords = points.map((p, i) => ({ x: (i / (points.length - 1)) * W, y: padding + (1 - (p - minP) / range) * chartH }));
   const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, hexToRgba(color, 0.35));
-  grad.addColorStop(1, hexToRgba(color, 0.0));
-
+  grad.addColorStop(0, hexToRgba(color, 0.35)); grad.addColorStop(1, hexToRgba(color, 0.0));
   ctx.beginPath(); ctx.moveTo(coords[0].x, H);
   for (let i = 0; i < coords.length; i++) ctx.lineTo(coords[i].x, coords[i].y);
-  ctx.lineTo(coords[coords.length - 1].x, H);
-  ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
-
+  ctx.lineTo(coords[coords.length - 1].x, H); ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
   ctx.beginPath();
-  for (let i = 0; i < coords.length; i++) {
-    if (i === 0) ctx.moveTo(coords[i].x, coords[i].y); else ctx.lineTo(coords[i].x, coords[i].y);
-  }
+  for (let i = 0; i < coords.length; i++) { if (i === 0) ctx.moveTo(coords[i].x, coords[i].y); else ctx.lineTo(coords[i].x, coords[i].y); }
   ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
-
   const last = coords[coords.length - 1];
   ctx.beginPath(); ctx.arc(last.x, last.y, 4, 0, Math.PI * 2);
-  ctx.fillStyle = color; ctx.fill();
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
 }
-
 function hexToRgba(hex, a) {
   const h = hex.replace('#', '');
-  const r = parseInt(h.substring(0, 2), 16);
-  const g = parseInt(h.substring(2, 4), 16);
-  const b = parseInt(h.substring(4, 6), 16);
-  return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  return 'rgba(' + parseInt(h.substring(0,2),16) + ',' + parseInt(h.substring(2,4),16) + ',' + parseInt(h.substring(4,6),16) + ',' + a + ')';
 }
-
 function sellCrypto(id) {
   const c = CRYPTOS.find(x => x.id === id);
   if (!c) return;
@@ -1763,11 +1883,59 @@ function sellCrypto(id) {
   const xpGain = total * 10;
   state.xp += xpGain;
   checkLevel();
+  questProgress('sold', total);
   cur.hold = 0;
   toast('+$' + fmtMoney(total) + ' · +' + fmtXP(xpGain) + ' XP', 'green');
   renderAll(); save();
 }
-
+function renderQuests() {
+  ensureQuests();
+  const page = document.getElementById('page-quests');
+  let html = '<div class="farm-bonus rack">💎 Рубинов: <b>' + (state.rubies === Infinity ? '∞' : state.rubies) + '</b> · Ежедневные сброс в 00:00 · Еженедельные — по понедельникам</div>';
+  html += '<div class="section-title">📜 Ежедневные</div>';
+  DAILY_QUESTS.forEach(q => {
+    const k = 'd_'+q.id, st = state.quests[k] || {prog:0,claimed:false};
+    const pct = Math.min(100, (st.prog/q.target)*100);
+    html += '<div class="quest-item' + (st.claimed?' claimed':(st.prog>=q.target?' done':'')) + '">' +
+      '<div class="quest-info"><div class="quest-name">'+q.name+'</div>' +
+      '<div class="quest-desc">'+q.desc+': '+fmtXP(st.prog)+' / '+q.target+'</div>' +
+      '<div class="quest-prog"><div class="quest-prog-fill" style="width:'+pct+'%"></div></div>' +
+      '<div class="quest-reward">💎 '+q.reward+'</div></div>' +
+      '<button class="btn-claim" data-claim="'+k+'" data-type="d"'+(st.claimed||st.prog<q.target?' disabled':'')+'>'+(st.claimed?'✓':'Забрать')+'</button></div>';
+  });
+  html += '<div class="section-title">📅 Еженедельные</div>';
+  WEEKLY_QUESTS.forEach(q => {
+    const k = 'w_'+q.id, st = state.quests[k] || {prog:0,claimed:false};
+    const pct = Math.min(100, (st.prog/q.target)*100);
+    html += '<div class="quest-item' + (st.claimed?' claimed':(st.prog>=q.target?' done':'')) + '">' +
+      '<div class="quest-info"><div class="quest-name">'+q.name+'</div>' +
+      '<div class="quest-desc">'+q.desc+': '+fmtXP(st.prog)+' / '+q.target+'</div>' +
+      '<div class="quest-prog"><div class="quest-prog-fill" style="width:'+pct+'%"></div></div>' +
+      '<div class="quest-reward">💎 '+q.reward+'</div></div>' +
+      '<button class="btn-claim" data-claim="'+k+'" data-type="w"'+(st.claimed||st.prog<q.target?' disabled':'')+'>'+(st.claimed?'✓':'Забрать')+'</button></div>';
+  });
+  page.innerHTML = html;
+  page.querySelectorAll('[data-claim]').forEach(btn => btn.addEventListener('click', () => {
+    const k = btn.dataset.claim;
+    const def = DAILY_QUESTS.concat(WEEKLY_QUESTS).find(q => (btn.dataset.type==='d'?'d_':'w_')+q.id === k);
+    if (def) claimQuest(k, def);
+  }));
+}
+function renderCases() {
+  const page = document.getElementById('page-cases');
+  let html = '<div class="farm-bonus rack">💎 Рубинов: <b>' + (state.rubies === Infinity ? '∞' : state.rubies) + '</b> · Открыто кейсов: ' + state.casesOpened + '</div>';
+  CASES.forEach(c => {
+    const can = state.rubies >= c.cost;
+    html += '<div class="case-card ' + c.id + '">' +
+      '<div class="case-icon">' + c.icon + '</div>' +
+      '<div class="case-name">' + c.name + '</div>' +
+      '<div class="case-desc">' + c.desc + '</div>' +
+      '<button class="btn-open" data-case="' + c.id + '"' + (can?'':' disabled') + '>Открыть за 💎 ' + c.cost + '</button>' +
+    '</div>';
+  });
+  page.innerHTML = html;
+  page.querySelectorAll('[data-case]').forEach(btn => btn.addEventListener('click', () => openCase(btn.dataset.case)));
+}
 function renderTicker() {
   const ticker = document.getElementById('ticker');
   let html = '';
@@ -1780,17 +1948,9 @@ function renderTicker() {
   });
   ticker.innerHTML = html;
 }
-
 function renderAll() {
-  renderHUD();
-  renderFarm();
-  renderDesk();
-  renderShop();
-  renderCrypto();
-  renderTicker();
-  applyTranslations();
+  renderHUD(); renderFarm(); renderDesk(); renderShop(); renderCrypto(); renderQuests(); renderCases(); renderTicker(); applyTranslations();
 }
-
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -1799,10 +1959,10 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.getElementById('page-' + tab.dataset.page).classList.add('active');
     if (tab.dataset.page === 'crypto') renderCrypto();
     if (tab.dataset.page === 'shop') renderShop();
+    if (tab.dataset.page === 'quests') renderQuests();
+    if (tab.dataset.page === 'cases') renderCases();
   });
 });
-
-// ============ МАЙНИНГ ============
 setInterval(() => {
   if (!state.farmRunning) return;
   if (!state.currentMining) return;
@@ -1811,11 +1971,10 @@ setInterval(() => {
   const hash = totalHashrate();
   if (hash <= 0) return;
   if (totalPowerDraw() > effectivePowerCapacity()) return;
-
   const rate = hash * crypto.rate * 0.0001;
   state.crypto[crypto.id].hold += rate;
   state.totalMined += rate;
-
+  if (Math.random() < 0.01) questProgress('mined', rate);
   let coolFactor = 1.0;
   if (state.activeCool) {
     const cool = COOLING.find(c => c.name === state.activeCool);
@@ -1825,27 +1984,24 @@ setInterval(() => {
     }
   }
   const wearRate = hash * 0.00002 * coolFactor;
-
   for (const name in state.ownedGPU) {
     const e = state.ownedGPU[name];
     if (!e || e.count <= 0) continue;
     if (e.wear >= 100) continue;
     e.wear = Math.min(100, e.wear + wearRate / e.count);
   }
-
   renderHUD();
   if (Math.random() < 0.2) save();
 }, 1000);
-
 function checkLevel() {
   while (state.xp >= state.xpNeeded) {
     state.xp -= state.xpNeeded;
     state.level++;
     state.xpNeeded = Math.floor(state.xpNeeded * 2.2);
+    questProgress('leveled', 1);
     toast(t('lvlUp') + state.level, 'green');
   }
 }
-
 setInterval(() => {
   CRYPTOS.forEach(c => {
     const cur = state.crypto[c.id];
@@ -1865,30 +2021,36 @@ setInterval(() => {
   }
   save();
 }, 5000);
-
-// ============ НАЛОГ: ежесекундная проверка ============
 setInterval(() => {
   const now = Date.now();
   if (now - state.lastTaxTime >= TAX_INTERVAL_MS) {
     const events = [];
     applyTaxCycle(events);
     state.lastTaxTime = now;
-    if (events.length) {
-      events.forEach(e => toast(e, state.taxDaysOverdue >= 3 ? 'red' : 'gold'));
-    }
+    if (events.length) events.forEach(e => toast(e, state.taxDaysOverdue >= 3 ? 'red' : 'gold'));
     save();
     if (document.querySelector('.tab.active')?.dataset.page === 'farm') renderFarm();
     renderHUD();
   }
-}, 30000); // проверка раз в 30 сек — точное время списания в 00:00 по lastTaxTime
-
-// ============ НАСТРОЙКИ ============
+}, 30000);
+setInterval(() => {
+  if (state.afkUntil > Date.now()) {
+    const btn = document.getElementById('btnAfk');
+    if (btn) {
+      const left = Math.floor((state.afkUntil - Date.now()) / 1000);
+      const h = Math.floor(left/3600), m = Math.floor((left%3600)/60), s = left%60;
+      btn.textContent = '🌙 AFK · ' + h + 'ч ' + m + 'м ' + s + 'с';
+    }
+  } else if (state.afkUntil > 0) {
+    state.afkUntil = 0;
+    renderFarm();
+  }
+}, 1000);
 const settingsModal = document.getElementById('settingsModal');
 const settingsBtn = document.getElementById('settingsBtn');
 const btnReset = document.getElementById('btnReset');
 const btnCloseSettings = document.getElementById('btnCloseSettings');
-
-settingsBtn.addEventListener('click', () => settingsModal.classList.add('show'));
+settingsBtn.addEventListener('click', () => { settingsModal.classList.add('show'); updateLangButtons(); });
 btnCloseSettings.addEventListener('click', () => settingsModal.classList.remove('show'));
 btnReset.addEventListener('click', () => {
   try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
@@ -1900,32 +2062,25 @@ btnReset.addEventListener('click', () => {
   renderAll(); save();
   toast(t('resetDone'), 'red');
 });
-settingsModal.addEventListener('click', (e) => {
-  if (e.target === settingsModal) settingsModal.classList.remove('show');
+document.getElementById('promoBtn').addEventListener('click', () => {
+  applyPromo(document.getElementById('promoInput').value.trim());
+  document.getElementById('promoInput').value = '';
 });
-
+settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) settingsModal.classList.remove('show'); });
 document.querySelectorAll('.lang-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const lang = btn.dataset.lang;
     if (!TRANSLATIONS[lang]) return;
     state.lang = lang;
     currentLang = lang;
-    save();
-    applyTranslations();
-    renderAll();
-    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+    save(); applyTranslations(); renderAll();
+    updateLangButtons();
   });
 });
-
 function updateLangButtons() {
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
 }
-settingsBtn.addEventListener('click', updateLangButtons);
-
-// ============ AFK МОДАЛКА ============
-document.getElementById('afkCancel').addEventListener('click', () => {
-  document.getElementById('afkModal').classList.remove('show');
-});
+document.getElementById('afkCancel').addEventListener('click', () => document.getElementById('afkModal').classList.remove('show'));
 document.getElementById('afkGo').addEventListener('click', () => {
   state.afkAutoTax = document.getElementById('afkAutoTax').checked;
   state.afkEcoMode = document.getElementById('afkEcoMode').checked;
@@ -1936,72 +2091,46 @@ document.getElementById('afkGo').addEventListener('click', () => {
   toast('🌙 AFK-режим активирован на 24 часа', 'green');
   renderFarm(); save();
 });
-
-// ============ ОТЧЁТ AFK ============
 function showReport(report) {
   const panel = document.getElementById('reportPanel');
   panel.classList.remove('tax', 'confiscate');
   if (report.confiscated > 0) panel.classList.add('confiscate');
   else if (report.taxAccrued > 0) panel.classList.add('tax');
   document.getElementById('reportTitle').textContent = report.confiscated > 0 ? '🚨 ' + t('reportConfiscated') : t('reportTitle');
-
   const dur = report.duration;
-  const hh = Math.floor(dur / 3600000);
-  const mm = Math.floor((dur % 3600000) / 60000);
-  const ss = Math.floor((dur % 60000) / 1000);
-
+  const hh = Math.floor(dur / 3600000), mm = Math.floor((dur % 3600000) / 60000), ss = Math.floor((dur % 60000) / 1000);
   let body = '';
   body += '<div class="report-section">';
   body += '<div class="report-row"><span class="lbl">' + t('reportDuration') + '</span><span class="val">' + hh + 'ч ' + mm + 'м ' + ss + 'с</span></div>';
   body += '<div class="report-row"><span class="lbl">' + t('reportDevices') + '</span><span class="val">' + gpuCount() + '</span></div>';
   body += '</div>';
-
   body += '<div class="report-section"><div style="color:#4ade80;font-weight:bold;margin-bottom:4px;">' + t('reportFinance') + '</div>';
   body += '<div class="report-row"><span class="lbl">' + t('reportEarned') + '</span><span class="val pos">+$' + fmtMoney(report.earned) + '</span></div>';
   body += '<div class="report-row"><span class="lbl">' + t('reportTaxPaid') + '</span><span class="val neg">-$' + fmtMoney(report.taxAccrued) + '</span></div>';
   body += '<div class="report-row"><span class="lbl">' + t('reportNet') + '</span><span class="val ' + ((report.earned - report.taxAccrued) >= 0 ? 'pos' : 'neg') + '">$' + fmtMoney(report.earned - report.taxAccrued) + '</span></div>';
   body += '</div>';
-
   body += '<div class="report-section"><div style="color:#fbbf24;font-weight:bold;margin-bottom:4px;">' + t('reportTax') + '</div>';
   body += '<div class="report-row"><span class="lbl">' + t('reportEnergy') + '</span><span class="val gold">' + report.kwh.toFixed(6) + ' кВт·ч</span></div>';
   body += '<div class="report-row"><span class="lbl">Тариф:</span><span class="val">$' + TAX_RATE.toFixed(6) + '/кВт·ч</span></div>';
   body += '<div class="report-row"><span class="lbl">Долг:</span><span class="val ' + (state.taxDebt > 0 ? 'neg' : 'pos') + '">$' + fmtMoney(state.taxDebt) + '</span></div>';
   body += '</div>';
-
   if (report.events.length) {
     body += '<div class="report-section"><div style="color:#60a5fa;font-weight:bold;margin-bottom:4px;">' + t('reportEvents') + '</div>';
     body += '<div class="report-events">';
     report.events.forEach(e => body += '<span class="ev">• ' + e + '</span>');
     body += '</div></div>';
   }
-
   document.getElementById('reportBody').innerHTML = body;
   document.getElementById('reportModal').classList.add('show');
 }
-document.getElementById('reportClose').addEventListener('click', () => {
-  document.getElementById('reportModal').classList.remove('show');
-});
-
-// ============ СТАРТ ============
+document.getElementById('reportClose').addEventListener('click', () => document.getElementById('reportModal').classList.remove('show'));
 applyTranslations();
 updateLangButtons();
-
 const offlineReport = processOfflineProgress();
 renderAll();
-
-if (offlineReport && offlineReport.duration >= 60 * 1000) {
-  setTimeout(() => showReport(offlineReport), 400);
-}
-
-// Обновляем lastOnline каждые 30 сек пока игра открыта
+if (offlineReport && offlineReport.duration >= 60 * 1000) setTimeout(() => showReport(offlineReport), 400);
 setInterval(() => { state.lastOnline = Date.now(); save(); }, 30000);
-
-// Сохраняем при закрытии
-window.addEventListener('beforeunload', () => {
-  state.lastOnline = Date.now();
-  save();
-});
-
+window.addEventListener('beforeunload', () => { state.lastOnline = Date.now(); save(); });
 setInterval(renderHUD, 500);
 </script>
 </body>
